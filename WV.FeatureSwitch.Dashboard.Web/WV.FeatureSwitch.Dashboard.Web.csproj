@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\WV.FeatureSwitch.Dashboard.BAL\WV.FeatureSwitch.Dashboard.BAL.csproj" />
     <ProjectReference Include="..\WV.FeatureSwitch.Dashboard.DAL\WV.FeatureSwitch.Dashboard.DAL.csproj" />
   </ItemGroup>
 

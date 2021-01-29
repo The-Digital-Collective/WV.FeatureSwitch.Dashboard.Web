@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using WV.FeatureSwitch.Dashboard.BAL.Models;
 using WV.FeatureSwitch.Dashboard.DAL.DBContext;
 using WV.FeatureSwitch.Dashboard.DAL.Entities;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
@@ -20,22 +21,58 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             _context = context;
         }
 
-        // GET: FeatureSwitch
         public IActionResult Index1()
         {
-            List<FeatureViewModel> viewModel = new List<FeatureViewModel>();
+            FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel()
+            {
+                FeatureModel = new List<FeatureModel>() { }
+            };
+            
             var items = _context.Features.ToList();
+
             foreach (var item in items)
             {
-                viewModel.Add(new FeatureViewModel
+                featureSwitchViewModel.FeatureModel.Add(new FeatureModel()
                 {
                     Id = item.Id,
                     Name = item.Name,
                     Flag = item.Flag
                 });
             }
-            return View(viewModel);           
+
+            return View(featureSwitchViewModel);
+
+            //List<FeatureViewModel> viewModel = new List<FeatureViewModel>();
+            //var items = _context.Features.ToList();
+            //foreach (var item in items)
+            //{
+            //    viewModel.Add(new FeatureViewModel
+            //    {
+            //        Id = item.Id,
+            //        Name = item.Name,
+            //        Flag = item.Flag
+            //    });
+            //}
+            //return View(viewModel);
         }
+
+        // GET: FeatureSwitch
+        //public IActionResult oldIndex1()
+        //{
+
+        //    List<FeatureViewModel> viewModel = new List<FeatureViewModel>();
+        //    var items = _context.Features.ToList();
+        //    foreach (var item in items)
+        //    {
+        //        viewModel.Add(new FeatureViewModel
+        //        {
+        //            Id = item.Id,
+        //            Name = item.Name,
+        //            Flag = item.Flag
+        //        });
+        //    }
+        //    return View(viewModel);           
+        //}
 
         // GET: FeatureSwitch - working
         public async Task<IActionResult> Index()
@@ -96,32 +133,32 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         }
 
         // GET: FeatureSwitch/Delete
-        public async Task<IActionResult> Delete(List<FeatureViewModel> viewModelList)
-        {
-            List<Feature> feature = new List<Feature>();
-           
-            foreach (var item in viewModelList)
-            {
-                if (item.SelectedItem.Selected)
-                {
-                    var selectedFeature = _context.Features.Find(item.Id);
-                    feature.Add(selectedFeature);
-                }                
-            }
-
-            _context.Features.RemoveRange(feature);
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
-        }
-
-        // GET: FeatureSwitch/Delete/{id} - working
-        //public async Task<IActionResult> Delete(int? id)
+        //public async Task<IActionResult> Delete(List<FeatureViewModel> viewModelList)
         //{
-        //    var feature = await _context.Features.FindAsync(id);
-        //    _context.Features.Remove(feature);
-        //    await _context.SaveChangesAsync();
+        //    List<Feature> feature = new List<Feature>();
+
+        //    foreach (var item in viewModelList)
+        //    {
+        //        if (item.SelectedItem.Selected)
+        //        {
+        //            var selectedFeature = _context.Features.Find(item.Id);
+        //            feature.Add(selectedFeature);
+        //        }                
+        //    }
+
+        //    _context.Features.RemoveRange(feature);
+        //    _context.SaveChanges();
         //    return RedirectToAction(nameof(Index));
         //}
+
+        // GET: FeatureSwitch/Delete/{id} - working
+        public async Task<IActionResult> Delete(int? id)
+        {
+            var feature = await _context.Features.FindAsync(id);
+            _context.Features.Remove(feature);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 
         // GET: FeatureSwitch/Edit/5
         //public async Task<IActionResult> Edit(int? id)
