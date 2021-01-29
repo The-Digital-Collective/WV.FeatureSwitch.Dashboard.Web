@@ -3,246 +3,217 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using WV.FeatureSwitch.Dashboard.BAL.Models;
-using WV.FeatureSwitch.Dashboard.DAL.DBContext;
-using WV.FeatureSwitch.Dashboard.DAL.Entities;
+using Microsoft.Extensions.Logging;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.Web.Helper;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web.Controllers
 {
     public class FeatureSwitchController : Controller
     {
-        private readonly FeatureSwitchDbContext _context;
+        private readonly IFeatureSwitchFactory _featureSwitchFactory;
+        private readonly ILogger<FeatureSwitchController> _logger;
+        private readonly string pageName = "Feature Switch";
 
-        public FeatureSwitchController(FeatureSwitchDbContext context)
+        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger)
         {
-            _context = context;
+            _featureSwitchFactory = featureSwitchFactory;
+            _logger = logger;
         }
 
-        public IActionResult Index1()
-        {
-            FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel()
-            {
-                FeatureModel = new List<FeatureModel>() { }
-            };
-            
-            var items = _context.Features.ToList();
 
-            foreach (var item in items)
+
+        // GET: FeatureSwitch       
+        public async Task<ActionResult> Index(string notification)
+        {
+            try
             {
-                featureSwitchViewModel.FeatureModel.Add(new FeatureModel()
-                {
-                    Id = item.Id,
-                    Name = item.Name,
-                    Flag = item.Flag
-                });
+                IList<FeatureViewModel> featureSwitchVMList = await _featureSwitchFactory.LoadList();
+                ViewBag.Notification = !string.IsNullOrEmpty(notification) ? notification : "";
+                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
+                return View(featureSwitchVMList);
             }
-
-            return View(featureSwitchViewModel);
-
-            //List<FeatureViewModel> viewModel = new List<FeatureViewModel>();
-            //var items = _context.Features.ToList();
-            //foreach (var item in items)
-            //{
-            //    viewModel.Add(new FeatureViewModel
-            //    {
-            //        Id = item.Id,
-            //        Name = item.Name,
-            //        Flag = item.Flag
-            //    });
-            //}
-            //return View(viewModel);
-        }
-
-        // GET: FeatureSwitch
-        //public IActionResult oldIndex1()
-        //{
-
-        //    List<FeatureViewModel> viewModel = new List<FeatureViewModel>();
-        //    var items = _context.Features.ToList();
-        //    foreach (var item in items)
-        //    {
-        //        viewModel.Add(new FeatureViewModel
-        //        {
-        //            Id = item.Id,
-        //            Name = item.Name,
-        //            Flag = item.Flag
-        //        });
-        //    }
-        //    return View(viewModel);           
-        //}
-
-        // GET: FeatureSwitch - working
-        public async Task<IActionResult> Index()
-        {
-            return View(await _context.Features.ToListAsync());
-        }
-
-        // GET: FeatureSwitch/Details/5
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var feature = await _context.Features
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (feature == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(feature);
-        //}
-
-        // GET: FeatureSwitch/Create
-        public IActionResult AddOrEdit(int id=0)
-        {
-            if (id == 0)
+            catch (Exception ex)
             {
-                return View(new Feature());
-            }
-            else
-            {
-                return View(_context.Features.Find(id));
+                _logger.LogError(ex, ConstantMessages.Error);
+                return RedirectToAction("Error", "Home");
             }
         }
 
-        // POST: FeatureSwitch/Create
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        public ActionResult Create(int? Id = 0)
+        {
+            ViewBag.Action = "Create";
+            try
+            {
+                FeatureViewModel newCE = new FeatureViewModel();
+                
+                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
+                return View("Edit", newCE);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                return RedirectToAction("Error", "Home");
+            }
+        }
+
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddOrEdit([Bind("Id,Name,Flag")] Feature feature)
+        public async Task<ActionResult> Create(FeatureViewModel featureViewModel)
         {
-            if (ModelState.IsValid)
+            ViewBag.Action = "Create";
+            try
             {
-                if(feature.Id == 0)
+                if (ModelState.IsValid)
                 {
-                    _context.Add(feature);
-                }
-                else
-                {
-                    _context.Update(feature);
-                }
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    IList<FeatureViewModel> featureViewModelList = await _featureSwitchFactory.LoadList();
+                    var featureExistsCount = featureViewModelList.Where(x => x.Name == featureViewModel.Name).Count();
+                    if (featureExistsCount == 0)
+                    {
+                        var response = await _featureSwitchFactory.Create(featureViewModel);
+                        _logger.LogInformation(ConstantMessages.Create, "CreateSave");
+                        return RedirectToAction("Index", new { notification = response.Message });
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("Exists", "Already Exists this event information");
+                        _logger.LogWarning(ConstantMessages.Duplicate.Replace("{event}", pageName));                        
+                    }
+                }             
+                return View("Edit", featureViewModel);
             }
-            return View(feature);
+            catch (Exception ex)
+            {                
+                _logger.LogError(ex, ConstantMessages.Error);
+                // return RedirectToAction("Error", "Home");
+                ModelState.AddModelError("Error", ConstantMessages.Error);           
+                return View("Index");
+            }
         }
 
-        // GET: FeatureSwitch/Delete
-        //public async Task<IActionResult> Delete(List<FeatureViewModel> viewModelList)
-        //{
-        //    List<Feature> feature = new List<Feature>();
-
-        //    foreach (var item in viewModelList)
-        //    {
-        //        if (item.SelectedItem.Selected)
-        //        {
-        //            var selectedFeature = _context.Features.Find(item.Id);
-        //            feature.Add(selectedFeature);
-        //        }                
-        //    }
-
-        //    _context.Features.RemoveRange(feature);
-        //    _context.SaveChanges();
-        //    return RedirectToAction(nameof(Index));
-        //}
-
-        // GET: FeatureSwitch/Delete/{id} - working
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<ActionResult> Edit(string name)
         {
-            var feature = await _context.Features.FindAsync(id);
-            _context.Features.Remove(feature);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            ViewBag.Action = "Edit";
+
+            try
+            {               
+                FeatureViewModel featureViewModel = await _featureSwitchFactory.Load(name);
+                if (featureViewModel == null)
+                {
+                    return NotFound();
+                }
+                
+                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
+                return View("Edit", featureViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ConstantMessages.Error, ex);
+                return RedirectToAction("Error", "Home");
+            }
         }
 
-        // GET: FeatureSwitch/Edit/5
-        //public async Task<IActionResult> Edit(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        // POST: ChoosingParty/Edit/5
+        [HttpPost]
+        public async Task<ActionResult> Edit(FeatureViewModel featureViewModel)
+        {
+            string pageAction = "Edit";
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    IList<FeatureViewModel> featureVMList = await _featureSwitchFactory.LoadList();
+                    var featureExistsCount = featureVMList.Where(x => x.Id == featureViewModel.Id).Count();
+                    if (featureExistsCount >= 1)
+                    {
+                        var response = await _featureSwitchFactory.Create(featureViewModel);
+                        _logger.LogInformation(ConstantMessages.Update.Replace("{event}", pageName));
+                        return RedirectToAction("Index", new { notification = response.Message });
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("Exists", "Already Exists this event information");
+                        _logger.LogWarning(ConstantMessages.Duplicate.Replace("{event}", pageName));
+                    }
+                }
 
-        //    var feature = await _context.Features.FindAsync(id);
-        //    if (feature == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return View(feature);
-        //}
+                ViewBag.Action = pageAction;                
+                return View("Edit", featureViewModel);
 
-        // POST: FeatureSwitch/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Flag")] Feature feature)
-        //{
-        //    if (id != feature.Id)
-        //    {
-        //        return NotFound();
-        //    }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                ViewBag.Action = pageAction;
+                ModelState.AddModelError("Error", ConstantMessages.Error);
+                return View("Edit", featureViewModel);
+            }
+        }
 
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            _context.Update(feature);
-        //            await _context.SaveChangesAsync();
-        //        }
-        //        catch (DbUpdateConcurrencyException)
-        //        {
-        //            if (!FeatureExists(feature.Id))
-        //            {
-        //                return NotFound();
-        //            }
-        //            else
-        //            {
-        //                throw;
-        //            }
-        //        }
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    return View(feature);
-        //}
+        public async Task<ActionResult> Delete(string name)
+        {
+            try
+            {
+                FeatureViewModel featureViewModel = await _featureSwitchFactory.Load(name);
+                if (featureViewModel == null)
+                {
+                    _logger.LogWarning(ConstantMessages.NoRecordsFound.Replace("{event}", pageName));
+                    return NotFound();
+                }
+                
+                return View(featureViewModel);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                return RedirectToAction("Error", "Home");
+            }
+        }
 
-        // GET: FeatureSwitch/Delete/5
-        //public async Task<IActionResult> Delete(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var feature = await _context.Features
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (feature == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(feature);
-        //}
-
-        // POST: FeatureSwitch/Delete/5
-        //[HttpPost, ActionName("Delete")]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> DeleteConfirmed(int id)
-        //{
-        //    var feature = await _context.Features.FindAsync(id);
-        //    _context.Features.Remove(feature);
-        //    await _context.SaveChangesAsync();
-        //    return RedirectToAction(nameof(Index));
-        //}
-
-        //private bool FeatureExists(int id)
-        //{
-        //    return _context.Features.Any(e => e.Id == id);
-        //}
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteConfirmed(string name)
+        {
+            try
+            {
+                var response = await _featureSwitchFactory.Delete(name);
+                _logger.LogInformation(ConstantMessages.Delete.Replace("{event}", pageName));
+                return RedirectToAction("Index", new { notification = response.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                //FeatureViewModel cpVM = await _featureSwitchFactory.Load(id);
+                //ModelState.AddModelError("Error", ConstantMessages.Error);
+                //return View(cpVM);
+                return View("Index");
+            }
+        }
     }
 }
