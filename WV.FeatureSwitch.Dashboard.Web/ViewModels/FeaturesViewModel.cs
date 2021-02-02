@@ -8,13 +8,15 @@ using WV.FeatureSwitch.Dashboard.BAL.Models;
 
 namespace WV.FeatureSwitch.Dashboard.Web.ViewModels
 {
-    public class FeatureViewModel
+    public class FeatureViewModels
     {      
-        public int Id { get; set; }
-        
-        [Required]
-        public string Name { get; set; }
-        
-        public bool Flag { get; set; }
-    }    
+        public List<FeatureModel> FeatureModel { get; set; }
+        public CountrySites CountrySites { get; set; }
+    }
+
+    public enum CountrySites
+    {
+        UKCountrySiteConnectionString,
+        NetherlandsCountrySiteConnectionString
+    }
 }

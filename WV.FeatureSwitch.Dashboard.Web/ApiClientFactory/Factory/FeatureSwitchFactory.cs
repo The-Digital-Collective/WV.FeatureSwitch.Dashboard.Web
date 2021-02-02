@@ -33,7 +33,8 @@ namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory
                 List<FeatureViewModel> featureSwitchVMList = new List<FeatureViewModel>();
                 var requestUrl = apiClient.CreateRequestUri(FeatureSwitchServiceApiUrls.FeatureSwitchApiUrl.LoadList);
                 var response = await apiClient.GetAsync<ApiResponse>(requestUrl);
-                featureSwitchVMList = JsonConvert.DeserializeObject<List<FeatureViewModel>>(Convert.ToString(response.ResponseObject));
+                featureSwitchVMList = JsonConvert.DeserializeObject<List<FeatureViewModel>>(Convert.ToString(response.ResponseObject));                               
+
                 return featureSwitchVMList;
             }
             catch (Exception ex)
@@ -76,7 +77,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory
                  throw ex;
             }
         }
-     
+
         /// <summary>
         /// Remove this zaki - doesn't work
         /// </summary>
@@ -95,22 +96,38 @@ namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory
                  throw ex;
             }
         }
-
+       
         public async Task<ApiResponse> Delete(string name)
         {
             try
             {
+                ApiResponse response = null;
                 var requestUrl = apiClient.CreateRequestUri(FeatureSwitchServiceApiUrls.FeatureSwitchApiUrl.Delete.Replace("{name}", name));
-                var response = await apiClient.DeleteAsync<FeatureViewModel>(requestUrl);
+                response = await apiClient.DeleteAsync<string>(requestUrl);
+
                 return response;
             }
             catch (Exception ex)
             {
-                 throw ex;
+                throw ex;
             }
         }
 
-      
+        public async Task<ApiResponse> ResetAll(string CountrySiteName)
+        {
+            try
+            {
+                ApiResponse response = null;
+                var requestUrl = apiClient.CreateRequestUri(FeatureSwitchServiceApiUrls.FeatureSwitchApiUrl.ResetAll);
+                response = await apiClient.PostAsync<string>(requestUrl, CountrySiteName);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
         private bool disposed = false;
 

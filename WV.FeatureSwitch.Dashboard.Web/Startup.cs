@@ -22,6 +22,8 @@ namespace WV.FeatureSwitch.Dashboard.Web
         {
             Configuration = configuration;
 
+            //AppConfigValues.ApiBaseUrl = "http://localhost:8622";
+
             AppConfigValues.ApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value;
             //AppConfigValues.DataCacheApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("DataCacheApiBaseUrl").Value;
             AppConfigValues.ApiToken = Configuration.GetSection("ApiConfig").GetSection("ApiToken").Value;

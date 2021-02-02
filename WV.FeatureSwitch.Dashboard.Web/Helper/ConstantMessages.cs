@@ -12,6 +12,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Helper
         public static string Update = "{event} updated Successfully.";
         public static string Delete = "{event} deleted Successfully .";
         public static string Duplicate = "{event} details Already Exists.";
+        public static string ResetAll = "All Feature Reset To Default Successfully .";
         public static string Error = "Error Occurred in While processing your requst.";
         public static string SignUpExists = "{event} already exists in Singup.";
         public static string LoadFailure = "Failed to retrieve the {event}-{0}.";

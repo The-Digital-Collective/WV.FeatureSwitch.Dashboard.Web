@@ -1,20 +1,27 @@
 ﻿@model IEnumerable<WV.FeatureSwitch.Dashboard.Web.ViewModels.FeatureViewModel>
 
-@{
-    
-}
-<h4>Choosing Events</h4>
+@{ }
+<h4>Feature Switch Dashboard</h4>
 @if (ViewBag.Notification != null)
 {
-    <span id="Notification" class="text-success pull-right">
-        @ViewBag.Notification
-    </span>
-}
+<span id="Notification" class="text-success pull-right">
+    @ViewBag.Notification
+</span>}
 <script>
     $("#Notification").fadeOut(6000);
 </script>
+
+
+@using (Html.BeginForm("ResetAll", "FeatureSwitch"))
+{
+    <input type="text" id="CountrySiteName" name="CountrySiteName" value="UKCountrySiteConnectionString">
+    <br>
+    <input type="submit" value="Reset">
+}
+
+
 <p>
-    <a asp-action="Create">Create New</a>    
+    <a asp-action="Create">Create Batch</a>
 </p>
 <table class="table">
     <caption hidden="hidden">Choosing Events</caption>
@@ -32,16 +39,17 @@
 
     @foreach (var item in Model)
     {
-        <tr>
-            <td>
-                @item.Id
-            </td>
+<tr>
+    <td>
+        @item.Id
+    </td>
 
-            <td>
-                <a asp-action="Edit" asp-route-name="@item.Name">@item.Name</a>
-            </td>
-            <td>
-                @item.Flag
-            </td>
-        </tr>    }
+    <td>
+        <a asp-action="Edit" asp-route-name="@item.Name">@item.Name</a>
+    </td>
+    <td>
+        @item.Flag
+    </td>
+</tr>
+}
 </table>

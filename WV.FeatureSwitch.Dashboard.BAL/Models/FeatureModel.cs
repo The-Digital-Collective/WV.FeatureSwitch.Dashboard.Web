@@ -9,7 +9,6 @@ namespace WV.FeatureSwitch.Dashboard.BAL.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public bool Flag { get; set; }
-        public SelectListItem SelectedItem { get; set; }
+        public bool Flag { get; set; }        
     }
 }

@@ -42,5 +42,12 @@ namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces
         /// <param name="name"></param>
         /// <returns>no values</returns>
         Task<ApiResponse> Delete(string name);
+  
+        /// <summary>
+        /// Reset All entries to Default in Table based on A Chosen Country Site  
+        /// </summary>
+        /// <param name="CountrySiteName"></param>
+        /// <returns></returns>
+        Task<ApiResponse> ResetAll(string CountrySiteName);
     }
 }

@@ -22,13 +22,13 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             _logger = logger;
         }
 
-
-
         // GET: FeatureSwitch       
         public async Task<ActionResult> Index(string notification)
         {
             try
-            {
+            {               
+                
+                
                 IList<FeatureViewModel> featureSwitchVMList = await _featureSwitchFactory.LoadList();
                 ViewBag.Notification = !string.IsNullOrEmpty(notification) ? notification : "";
                 _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
@@ -40,32 +40,6 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 return RedirectToAction("Error", "Home");
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public ActionResult Create(int? Id = 0)
         {
@@ -82,18 +56,25 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 _logger.LogError(ex, ConstantMessages.Error);
                 return RedirectToAction("Error", "Home");
             }
-        }
+        }       
 
-        [HttpPost]
+        /// <summary>
+        /// Create - Working, Dont Change. Change from Create1 to Create
+        /// </summary>
+        /// <param name="featvureViewModel"></param>
+        /// <returns></returns>
+        [HttpPost, ActionName("Create")]
         public async Task<ActionResult> Create(FeatureViewModel featureViewModel)
         {
             ViewBag.Action = "Create";
             try
             {
                 if (ModelState.IsValid)
-                {
+                {                    
+                    var featureExistsCount = 0;
                     IList<FeatureViewModel> featureViewModelList = await _featureSwitchFactory.LoadList();
-                    var featureExistsCount = featureViewModelList.Where(x => x.Name == featureViewModel.Name).Count();
+                    //featureExistsCount = featureViewModelList.Where(x => x.Name == featureViewModel.Name).Count();
+
                     if (featureExistsCount == 0)
                     {
                         var response = await _featureSwitchFactory.Create(featureViewModel);
@@ -103,16 +84,17 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                     else
                     {
                         ModelState.AddModelError("Exists", "Already Exists this event information");
-                        _logger.LogWarning(ConstantMessages.Duplicate.Replace("{event}", pageName));                        
+                        _logger.LogWarning(ConstantMessages.Duplicate.Replace("{event}", pageName));
                     }
-                }             
-                return View("Edit", featureViewModel);
+
+                }
+                return View("Edit", "featureViewModel");
             }
             catch (Exception ex)
-            {                
+            {
                 _logger.LogError(ex, ConstantMessages.Error);
                 // return RedirectToAction("Error", "Home");
-                ModelState.AddModelError("Error", ConstantMessages.Error);           
+                ModelState.AddModelError("Error", ConstantMessages.Error);
                 return View("Index");
             }
         }
@@ -212,6 +194,53 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 //FeatureViewModel cpVM = await _featureSwitchFactory.Load(id);
                 //ModelState.AddModelError("Error", ConstantMessages.Error);
                 //return View(cpVM);
+                return View("Index");
+            }
+        }
+
+        /// <summary>
+        /// Delete Batch - Working, Dont Change
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        [HttpPost, ActionName("DeleteBatch")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteBatch(string name)
+        {
+            try
+            {
+                var response = await _featureSwitchFactory.Delete(name);
+                _logger.LogInformation(ConstantMessages.Delete.Replace("{event}", pageName));
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);                
+                return View("Index");
+            }
+        }
+
+        /// <summary>
+        /// Reset All - Working, Dont Change
+        /// </summary>
+        /// <param name="CountrySiteName"></param>
+        /// <returns></returns>
+        [HttpPost, ActionName("ResetAll")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetAll(string CountrySiteName)
+        {
+            ViewBag.Action = "ResetAll";
+            try
+            {   
+                
+
+                var response = await _featureSwitchFactory.ResetAll(CountrySiteName);
+                _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
                 return View("Index");
             }
         }
