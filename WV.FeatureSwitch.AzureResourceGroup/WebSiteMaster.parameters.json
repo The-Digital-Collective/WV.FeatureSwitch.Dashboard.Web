@@ -1,0 +1,35 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"GitHubFetcherWebServiceURI": {
+			"value": "GitHub-Access-URL"
+		},
+		"_GitHubLocation": {
+			"value": "GitHub-Location"
+		},
+		"_GitHubAccessToken": {
+			"value": "GitHub-Access-Token"
+		},
+		"environmentName": {
+			"value": "FSControlPanel-Devops"
+		},
+		"skuName": {
+			"value": "skuName"
+		},
+		"skuCapacity": {
+			"value": "skuCapacity"
+		},
+		"ApiConfig:ApiBaseUrl": {
+			"value": "ApiConfig-ApiBaseUrl"
+		},
+		"ApiConfig:ApiToken": {
+			"value": "ApiConfig-ApiToken"
+		},
+		"ApiConfig:ApiVersion": {
+			"value": "ApiConfig-ApiVersion"
+		}
+		
+	}
+}
+

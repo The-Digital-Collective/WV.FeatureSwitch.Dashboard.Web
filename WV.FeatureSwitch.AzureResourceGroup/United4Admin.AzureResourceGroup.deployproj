@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>e0a47d87-716d-458c-adef-22c6d011b842</ProjectGuid>
+    <ProjectGuid>d7203dde-93c2-4ba2-b943-120b3dc738f3</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
     <PrepareForBuildDependsOn>
@@ -23,13 +23,19 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
-<Content Include="WebSiteMasterTemplate.json" />
-    <Content Include="WebSiteMaster.parameters.json" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
     <Content Include="Deploy-AzureResourceGroup.ps1" />
     <Content Include="Deploy-AzureResourceGroup-Automation.ps1" />
-  </ItemGroup>
+    
+  	<Content Include="WebSiteMasterTemplate.json" />
+    <Content Include="WebSiteMaster.parameters.json" />
+    
+    <Content Include="child/deployHostingPlan.json" />
+	<Content Include="child/deployWebSite.json" />
+	<Content Include="child/deployAppSetting.json" />
+	
+    </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
