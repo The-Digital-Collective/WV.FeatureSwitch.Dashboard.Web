@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace WV.FeatureSwitch.Dashboard.Web.APIClient
+﻿namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
 {
     public class ApiResponse
     {
