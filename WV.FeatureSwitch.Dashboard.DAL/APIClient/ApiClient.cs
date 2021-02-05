@@ -1,14 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using WV.FeatureSwitch.Dashboard.Web.ViewModels;
+using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 
-namespace WV.FeatureSwitch.Dashboard.Web.APIClient
+namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
 {
     public class ApiClient : IDisposable
     {
@@ -16,13 +13,12 @@ namespace WV.FeatureSwitch.Dashboard.Web.APIClient
         private readonly string _secretToken;
         private readonly string _apiVersion;
         private bool disposed;
-
        
         private Uri _baseEndpoint { get; set; }
 
         public ApiClient()
         {            
-            _baseEndpoint = new Uri(AppConfigValues.ApiBaseUrl);
+            //_baseEndpoint = new Uri(AppConfigValues.ApiBaseUrl);
             _secretToken = Convert.ToString(AppConfigValues.ApiToken);
             _apiVersion = "api-version=" + Convert.ToString(AppConfigValues.ApiVersion);
             _httpClient = new HttpClient();
@@ -43,11 +39,6 @@ namespace WV.FeatureSwitch.Dashboard.Web.APIClient
         public async Task<ApiResponse> PostAsync<T>(Uri requestUrl, T content)
         {
             AddDefaultHeaders();
-            if(requestUrl.PathAndQuery.Contains("ImportChildId"))
-            {
-                //this process takes an especially long time: extend timeout
-                _httpClient.Timeout = TimeSpan.FromMinutes(30);
-            }
             var response = await _httpClient.PostAsync(requestUrl.ToString(), CreateHttpContent<T>(content));
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsStringAsync();
@@ -88,9 +79,9 @@ namespace WV.FeatureSwitch.Dashboard.Web.APIClient
             return JsonConvert.DeserializeObject<ApiResponse>(data);
         }
 
-        public Uri CreateRequestUri(string relativePath, string queryString = "")
+        public Uri CreateRequestUri(string _baseEndpoint, string queryString = "")
         {           
-            Uri endpoint = new Uri(_baseEndpoint, FormatUri(relativePath));
+            Uri endpoint = new Uri(new Uri(_baseEndpoint), queryString);
             var uriBuilder = new UriBuilder(endpoint);
             //uriBuilder.Query = _apiVersion + (!string.IsNullOrEmpty(queryString) ? "&" + queryString : "");
             return uriBuilder.Uri;

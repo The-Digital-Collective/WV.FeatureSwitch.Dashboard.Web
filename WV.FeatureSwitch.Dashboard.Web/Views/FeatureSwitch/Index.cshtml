@@ -1,55 +1,60 @@
-﻿@model IEnumerable<WV.FeatureSwitch.Dashboard.Web.ViewModels.FeatureViewModel>
+﻿@model IEnumerable<WV.FeatureSwitch.Dashboard.Web.ViewModels.FeatureSwitchViewModel>
 
 @{ }
 <h4>Feature Switch Dashboard</h4>
 @if (ViewBag.Notification != null)
 {
-<span id="Notification" class="text-success pull-right">
-    @ViewBag.Notification
-</span>}
+    <span id="Notification" class="text-success pull-right">
+        @ViewBag.Notification
+    </span>}
 <script>
     $("#Notification").fadeOut(6000);
 </script>
 
-
-@using (Html.BeginForm("ResetAll", "FeatureSwitch"))
+@using (Html.BeginForm("BulkCreate", "FeatureSwitch"))
 {
-    <input type="text" id="CountrySiteName" name="CountrySiteName" value="UKCountrySiteConnectionString">
+    <button>Bulk Create</button>
+}
+
+@using (Html.BeginForm("BulkDelete", "FeatureSwitch"))
+{
+    <input type="text" id="CountrySiteName" name="CountrySiteName" value="delete">
     <br>
-    <input type="submit" value="Reset">
+    <input type="submit" value="delete">
 }
 
-
-<p>
-    <a asp-action="Create">Create Batch</a>
-</p>
-<table class="table">
-    <caption hidden="hidden">Choosing Events</caption>
-    <tr>
-        <th scope="col">
-            <label asp-for="FirstOrDefault().Id"></label>
-        </th>
-        <th scope="col">
-            <label asp-for="FirstOrDefault().Name"></label>
-        </th>
-        <th scope="col">
-            <label asp-for="FirstOrDefault().Flag"></label>
-        </th>
-    </tr>
-
-    @foreach (var item in Model)
-    {
-<tr>
-    <td>
-        @item.Id
-    </td>
-
-    <td>
-        <a asp-action="Edit" asp-route-name="@item.Name">@item.Name</a>
-    </td>
-    <td>
-        @item.Flag
-    </td>
-</tr>
+@foreach (var item in Model)
+{
+    <Table>
+        <thead>
+            <tr>
+                <th>
+                    @using (Html.BeginForm("ResetAll", "FeatureSwitch"))
+                    {
+                        <input hidden="hidden" type="text" id="CountrySiteName" name="CountrySiteName" value="@item.CountrySite">
+                        <br>
+                        <input type="submit" value="Reset">
+                    }
+                </th>
+            </tr>
+            <tr>
+                <th>@item.CountrySite</th>
+            </tr>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Name</th>
+                <th scope="col">Flag</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in item.Features)
+            {
+                <tr>
+                    <td>@record.Id</td>
+                    <td><a asp-action="Edit" asp-route-name="@record.Name">@record.Name</a></td>
+                    <td>@record.Flag</td>
+                </tr>
+            }
+        </tbody>
+    </Table>
 }
-</table>

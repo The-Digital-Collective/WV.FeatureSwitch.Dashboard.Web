@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.BAL.Models;
+using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 using WV.FeatureSwitch.Dashboard.Web.Helper;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
@@ -15,227 +17,165 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         private readonly IFeatureSwitchFactory _featureSwitchFactory;
         private readonly ILogger<FeatureSwitchController> _logger;
         private readonly string pageName = "Feature Switch";
-
+        
         public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger)
         {
             _featureSwitchFactory = featureSwitchFactory;
-            _logger = logger;
+            _logger = logger;            
         }
 
         // GET: FeatureSwitch       
         public async Task<ActionResult> Index(string notification)
         {
             try
-            {               
-                
-                
-                IList<FeatureViewModel> featureSwitchVMList = await _featureSwitchFactory.LoadList();
+            {                    
+                List<FeatureSwitchViewModel> featureViewModel = await GetAllFeatureLists();
+
                 ViewBag.Notification = !string.IsNullOrEmpty(notification) ? notification : "";
                 _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
-                return View(featureSwitchVMList);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ConstantMessages.Error);
-                return RedirectToAction("Error", "Home");
-            }
-        }
 
-        public ActionResult Create(int? Id = 0)
-        {
-            ViewBag.Action = "Create";
-            try
-            {
-                FeatureViewModel newCE = new FeatureViewModel();
-                
-                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
-                return View("Edit", newCE);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ConstantMessages.Error);
-                return RedirectToAction("Error", "Home");
-            }
-        }       
-
-        /// <summary>
-        /// Create - Working, Dont Change. Change from Create1 to Create
-        /// </summary>
-        /// <param name="featvureViewModel"></param>
-        /// <returns></returns>
-        [HttpPost, ActionName("Create")]
-        public async Task<ActionResult> Create(FeatureViewModel featureViewModel)
-        {
-            ViewBag.Action = "Create";
-            try
-            {
-                if (ModelState.IsValid)
-                {                    
-                    var featureExistsCount = 0;
-                    IList<FeatureViewModel> featureViewModelList = await _featureSwitchFactory.LoadList();
-                    //featureExistsCount = featureViewModelList.Where(x => x.Name == featureViewModel.Name).Count();
-
-                    if (featureExistsCount == 0)
-                    {
-                        var response = await _featureSwitchFactory.Create(featureViewModel);
-                        _logger.LogInformation(ConstantMessages.Create, "CreateSave");
-                        return RedirectToAction("Index", new { notification = response.Message });
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("Exists", "Already Exists this event information");
-                        _logger.LogWarning(ConstantMessages.Duplicate.Replace("{event}", pageName));
-                    }
-
-                }
-                return View("Edit", "featureViewModel");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ConstantMessages.Error);
-                // return RedirectToAction("Error", "Home");
-                ModelState.AddModelError("Error", ConstantMessages.Error);
-                return View("Index");
-            }
-        }
-
-        public async Task<ActionResult> Edit(string name)
-        {
-            ViewBag.Action = "Edit";
-
-            try
-            {               
-                FeatureViewModel featureViewModel = await _featureSwitchFactory.Load(name);
-                if (featureViewModel == null)
-                {
-                    return NotFound();
-                }
-                
-                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
-                return View("Edit", featureViewModel);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogInformation(ConstantMessages.Error, ex);
-                return RedirectToAction("Error", "Home");
-            }
-        }
-
-        // POST: ChoosingParty/Edit/5
-        [HttpPost]
-        public async Task<ActionResult> Edit(FeatureViewModel featureViewModel)
-        {
-            string pageAction = "Edit";
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    IList<FeatureViewModel> featureVMList = await _featureSwitchFactory.LoadList();
-                    var featureExistsCount = featureVMList.Where(x => x.Id == featureViewModel.Id).Count();
-                    if (featureExistsCount >= 1)
-                    {
-                        var response = await _featureSwitchFactory.Create(featureViewModel);
-                        _logger.LogInformation(ConstantMessages.Update.Replace("{event}", pageName));
-                        return RedirectToAction("Index", new { notification = response.Message });
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("Exists", "Already Exists this event information");
-                        _logger.LogWarning(ConstantMessages.Duplicate.Replace("{event}", pageName));
-                    }
-                }
-
-                ViewBag.Action = pageAction;                
-                return View("Edit", featureViewModel);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ConstantMessages.Error);
-                ViewBag.Action = pageAction;
-                ModelState.AddModelError("Error", ConstantMessages.Error);
-                return View("Edit", featureViewModel);
-            }
-        }
-
-        public async Task<ActionResult> Delete(string name)
-        {
-            try
-            {
-                FeatureViewModel featureViewModel = await _featureSwitchFactory.Load(name);
-                if (featureViewModel == null)
-                {
-                    _logger.LogWarning(ConstantMessages.NoRecordsFound.Replace("{event}", pageName));
-                    return NotFound();
-                }
-                
-                return View(featureViewModel);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ConstantMessages.Error);
-                return RedirectToAction("Error", "Home");
-            }
-        }
-
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(string name)
-        {
-            try
-            {
-                var response = await _featureSwitchFactory.Delete(name);
-                _logger.LogInformation(ConstantMessages.Delete.Replace("{event}", pageName));
-                return RedirectToAction("Index", new { notification = response.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ConstantMessages.Error);
-                //FeatureViewModel cpVM = await _featureSwitchFactory.Load(id);
-                //ModelState.AddModelError("Error", ConstantMessages.Error);
-                //return View(cpVM);
-                return View("Index");
-            }
-        }
-
-        /// <summary>
-        /// Delete Batch - Working, Dont Change
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        [HttpPost, ActionName("DeleteBatch")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteBatch(string name)
-        {
-            try
-            {
-                var response = await _featureSwitchFactory.Delete(name);
-                _logger.LogInformation(ConstantMessages.Delete.Replace("{event}", pageName));
-                return RedirectToAction("Index");
+                return View(featureViewModel); 
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ConstantMessages.Error);                
+                return RedirectToAction("Error", "Home");
+            }
+        }        
+
+        /// <summary>
+        /// Get All Feature Lists
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<FeatureSwitchViewModel>> GetAllFeatureLists()
+        {
+            string baseUrl = AppConfigValues.ApiBaseUrl;
+            var listOfCountries = AppConfigValues.ApiCountry;
+            List<string> CountrySites = listOfCountries.Split(',').ToList();
+            List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
+
+            foreach (string country in CountrySites)
+            {
+                string url = UrlBuilder.BaseUrlBuilder(baseUrl, country);
+                List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
+                featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
+
+                FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel() 
+                {
+                    Features = new List<Feature>(),
+                };
+
+                foreach (var item in featureSwitchViewModelMList)
+                {
+                    featureSwitchViewModel.Features.Add(new Feature
+                    {
+                        Id = item.Id,
+                        Name = item.Name,
+                        Flag = item.Flag
+                    });
+                }
+
+                featureSwitchViewModel.CountrySite = country;
+                featureViewModel.Add(featureSwitchViewModel);                
+            }
+            return featureViewModel;
+        }
+
+        /// <summary>
+        /// Bulk Create
+        /// </summary>
+        /// <param name="featureViewModel"></param>
+        /// <returns></returns>
+        [HttpPost, ActionName("BulkCreate")]
+        public async Task<ActionResult> BulkCreate(FeatureModel featureViewModel)
+        {
+            ViewBag.Action = "BulkCreate";
+            try
+            {
+                if (ModelState.IsValid)
+                {               
+                    string baseUrl = AppConfigValues.ApiBaseUrl;
+                    var listOfCountries = AppConfigValues.ApiCountry;
+                    List<string> CountrySites = listOfCountries.Split(',').ToList();
+
+                    foreach (string countrySiteName in CountrySites)
+                    {
+                        string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
+                        var response = await _featureSwitchFactory.Create(featureViewModel, url);
+                    }             
+                }
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                ModelState.AddModelError("Error", ConstantMessages.Error);
                 return View("Index");
             }
         }
 
         /// <summary>
-        /// Reset All - Working, Dont Change
+        /// Bulk Delete
         /// </summary>
-        /// <param name="CountrySiteName"></param>
+        /// <param name="featureName"></param>
+        /// <returns></returns>
+        [HttpPost, ActionName("BulkDelete")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> BulkDelete(string featureName)
+        {
+            ViewBag.Action = "BulkDelete";
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    string baseUrl = AppConfigValues.ApiBaseUrl;
+                    var listOfCountries = AppConfigValues.ApiCountry;
+                    List<string> CountrySites = listOfCountries.Split(',').ToList();
+
+                    foreach (string countrySiteName in CountrySites)
+                    {
+                        string url = string.Empty;
+                        url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
+                        var response = await _featureSwitchFactory.Delete(featureName, url);
+                    }
+                    _logger.LogInformation(ConstantMessages.Delete.Replace("{event}", pageName));
+                }
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                return View("Index");
+            }
+        }
+
+        /// <summary>
+        /// Reset All 
+        /// </summary>
+        /// <param name="countrySiteName"></param>
         /// <returns></returns>
         [HttpPost, ActionName("ResetAll")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetAll(string CountrySiteName)
+        public async Task<IActionResult> ResetAll(string countrySiteName)
         {
             ViewBag.Action = "ResetAll";
             try
-            {   
-                
+            {
+                if (ModelState.IsValid)
+                {
+                    string baseUrl = AppConfigValues.ApiBaseUrl;
+                    string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
+                    List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
+                    featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
 
-                var response = await _featureSwitchFactory.ResetAll(CountrySiteName);
-                _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                    foreach (var feature in featureSwitchViewModelMList)
+                    {
+                        feature.Flag = false;
+                        var response = await _featureSwitchFactory.Create(feature, url);
+                    }
+
+                    _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                }
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

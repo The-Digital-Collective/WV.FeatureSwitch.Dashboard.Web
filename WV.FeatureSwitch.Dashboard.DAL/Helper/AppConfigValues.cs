@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WV.FeatureSwitch.Dashboard.Web.ViewModels
+namespace WV.FeatureSwitch.Dashboard.DAL.ViewModels
 {
     public static class AppConfigValues
     {
@@ -18,5 +18,6 @@ namespace WV.FeatureSwitch.Dashboard.Web.ViewModels
         public static string BaseApiBaseUrl { get; set; }
         public static string BaseAdyenApiBaseUrl { get; set; }
         public static string HostedCountry { get; set; }
+        public static string ApiCountry { get; set; }
     }
 }
