@@ -15,18 +15,9 @@ namespace WV.FeatureSwitch.Dashboard.Web
         {
             Configuration = configuration;
 
-            AppConfigValues.ApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value;
-            //AppConfigValues.DataCacheApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("DataCacheApiBaseUrl").Value;
+            AppConfigValues.ApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value;            
             AppConfigValues.ApiToken = Configuration.GetSection("ApiConfig").GetSection("ApiToken").Value;
-            AppConfigValues.ApiVersion = Configuration.GetSection("ApiConfig").GetSection("ApiVersion").Value;
-            AppConfigValues.LogStorageContainer = Configuration.GetSection("LogStorageDetails").GetSection("LogStorageContainer").Value;
-            AppConfigValues.StorageAccountKey = Configuration.GetSection("LogStorageDetails").GetSection("StorageAccountKey").Value;
-            AppConfigValues.StorageAccountName = Configuration.GetSection("LogStorageDetails").GetSection("StorageAccountName").Value;
-            AppConfigValues.CRMType = Configuration.GetSection("CRMExtractData").GetSection("CRMType").Value;
-            AppConfigValues.XSLTStorageContainer = Configuration.GetSection("LogStorageDetails").GetSection("XSLTStorageContainer").Value;
-            //AppConfigValues.BaseApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("BaseApiBaseUrl").Value;
-            //AppConfigValues.BaseAdyenApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("BaseAdyenApiBaseUrl").Value;
-            AppConfigValues.HostedCountry = Configuration.GetSection("CRMExtractData").GetSection("HostedCountry").Value;
+            AppConfigValues.ApiVersion = Configuration.GetSection("ApiConfig").GetSection("ApiVersion").Value;      
             AppConfigValues.ApiCountry = Configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value;
         }
 

@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Threading.Tasks;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClient;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
-
 
 namespace WV.FeatureSwitch.Dashboard.DAL.Helper
 {
     public class Serilog
     {
-        protected APIClient.ApiClient apiClient;
+        protected ApiClient apiClient;
 
         public Serilog()
         {
-            this.apiClient = new APIClient.ApiClient();
+            this.apiClient = new ApiClient();
         }
 
-        public Serilog(APIClient.ApiClient _apiClient)
+        public Serilog(ApiClient _apiClient)
         {
             this.apiClient = _apiClient;
         }

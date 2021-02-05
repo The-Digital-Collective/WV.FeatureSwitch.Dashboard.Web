@@ -32,7 +32,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 List<FeatureSwitchViewModel> featureViewModel = await GetAllFeatureLists();
 
                 ViewBag.Notification = !string.IsNullOrEmpty(notification) ? notification : "";
-                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
+                _logger.LogInformation(ConstantMessages.Load.Replace("{pageName}", pageName));
 
                 return View(featureViewModel); 
             }
@@ -102,7 +102,8 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                     {
                         string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
                         var response = await _featureSwitchFactory.Create(featureViewModel, url);
-                    }             
+                    }
+                    _logger.LogInformation(ConstantMessages.BulkCreate, pageName);
                 }
                 return RedirectToAction("Index");
             }
@@ -138,7 +139,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                         url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
                         var response = await _featureSwitchFactory.Delete(featureName, url);
                     }
-                    _logger.LogInformation(ConstantMessages.Delete.Replace("{event}", pageName));
+                    _logger.LogInformation(ConstantMessages.ResetAll, pageName);
                 }
                 return RedirectToAction("Index");
             }
@@ -173,7 +174,6 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                         feature.Flag = false;
                         var response = await _featureSwitchFactory.Create(feature, url);
                     }
-
                     _logger.LogInformation(ConstantMessages.ResetAll, pageName);
                 }
                 return RedirectToAction("Index");

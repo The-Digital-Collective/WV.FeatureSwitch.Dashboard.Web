@@ -1,4 +1,4 @@
-﻿namespace WV.FeatureSwitch.Dashboard.DAL.ApiClient
+﻿namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
 {
     public class HelperUrls
     {

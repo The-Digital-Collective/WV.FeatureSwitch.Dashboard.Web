@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WV.FeatureSwitch.Dashboard.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WV.FeatureSwitch.Dashboard.DAL", "WV.FeatureSwitch.Dashboard.DAL\WV.FeatureSwitch.Dashboard.DAL.csproj", "{69529DF7-B6FC-490C-9279-DB267CADCFF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WV.FeatureSwitch.Dashboard.UnitTest", "WV.FeatureSwitch.Dashboard.UnitTest\WV.FeatureSwitch.Dashboard.UnitTest.csproj", "{AF89DBC7-7B52-465D-B8C7-B798D6DF457E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{69529DF7-B6FC-490C-9279-DB267CADCFF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69529DF7-B6FC-490C-9279-DB267CADCFF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69529DF7-B6FC-490C-9279-DB267CADCFF7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF89DBC7-7B52-465D-B8C7-B798D6DF457E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF89DBC7-7B52-465D-B8C7-B798D6DF457E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF89DBC7-7B52-465D-B8C7-B798D6DF457E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF89DBC7-7B52-465D-B8C7-B798D6DF457E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
