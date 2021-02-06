@@ -112,7 +112,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                         _logger.LogInformation(ConstantMessages.BulkCreate, pageName);
                     }                    
                 }
-                return View("Index");
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -152,7 +152,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                         _logger.LogInformation(ConstantMessages.ResetAll, pageName);
                     }                     
                 }
-                return View("Index");
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -191,7 +191,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                         _logger.LogInformation(ConstantMessages.ResetAll, pageName);
                     }                      
                 }
-                return View("Index");
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {

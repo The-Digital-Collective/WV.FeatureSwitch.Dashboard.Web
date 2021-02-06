@@ -123,13 +123,13 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Act
 
             var actionResult = _featureSwitchController.BulkCreate(featureTestCreateObject);
-            var actionResponse = actionResult.Result as ViewResult;
+            var actionResponse = actionResult.Result as RedirectToActionResult;
 
             #endregion
 
             #region Assert
 
-            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+            Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
 
             #endregion
         }
@@ -164,13 +164,13 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Act
 
             var actionResult = _featureSwitchController.BulkDelete(featureTestCreateObject.Name);
-            var actionResponse = actionResult.Result as ViewResult;
+            var actionResponse = actionResult.Result as RedirectToActionResult;
 
             #endregion
 
             #region Assert
 
-            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+            Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
 
             #endregion
         }
@@ -200,13 +200,13 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Act
 
             var actionResult = _featureSwitchController.ResetAll(countrySite);
-            var actionResponse = actionResult.Result as ViewResult;
+            var actionResponse = actionResult.Result as RedirectToActionResult;
 
             #endregion
 
             #region Assert
 
-            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+            Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
 
             #endregion
         }
