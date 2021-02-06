@@ -50,34 +50,37 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         public async Task<List<FeatureSwitchViewModel>> GetAllFeatureLists()
         {
             string baseUrl = AppConfigValues.ApiBaseUrl;
-            var listOfCountries = AppConfigValues.ApiCountry;
-            List<string> CountrySites = listOfCountries.Split(',').ToList();
             List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
 
-            foreach (string country in CountrySites)
+            if (!string.IsNullOrEmpty(baseUrl))
             {
-                string url = UrlBuilder.BaseUrlBuilder(baseUrl, country);
-                List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
-                featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
+                var listOfCountries = AppConfigValues.ApiCountry;
+                List<string> CountrySites = listOfCountries.Split(',').ToList();
 
-                FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel() 
+                foreach (string country in CountrySites)
                 {
-                    Features = new List<Feature>(),
-                };
+                    string url = UrlBuilder.BaseUrlBuilder(baseUrl, country);
+                    List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
+                    featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
 
-                foreach (var item in featureSwitchViewModelMList)
-                {
-                    featureSwitchViewModel.Features.Add(new Feature
+                    FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel()
                     {
-                        Id = item.Id,
-                        Name = item.Name,
-                        Flag = item.Flag
-                    });
-                }
+                        Features = new List<Feature>(),
+                    };
 
-                featureSwitchViewModel.CountrySite = country;
-                featureViewModel.Add(featureSwitchViewModel);                
-            }
+                    foreach (var item in featureSwitchViewModelMList)
+                    {
+                        featureSwitchViewModel.Features.Add(new Feature
+                        {
+                            Id = item.Id,
+                            Name = item.Name,
+                            Flag = item.Flag
+                        });
+                    }
+                    featureSwitchViewModel.CountrySite = country;
+                    featureViewModel.Add(featureSwitchViewModel);
+                }
+            }            
             return featureViewModel;
         }
 
@@ -95,17 +98,21 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 if (ModelState.IsValid)
                 {               
                     string baseUrl = AppConfigValues.ApiBaseUrl;
-                    var listOfCountries = AppConfigValues.ApiCountry;
-                    List<string> CountrySites = listOfCountries.Split(',').ToList();
 
-                    foreach (string countrySiteName in CountrySites)
+                    if (!string.IsNullOrEmpty(baseUrl))
                     {
-                        string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
-                        var response = await _featureSwitchFactory.Create(featureViewModel, url);
-                    }
-                    _logger.LogInformation(ConstantMessages.BulkCreate, pageName);
+                        var listOfCountries = AppConfigValues.ApiCountry;
+                        List<string> CountrySites = listOfCountries.Split(',').ToList();
+
+                        foreach (string countrySiteName in CountrySites)
+                        {
+                            string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
+                            var response = await _featureSwitchFactory.Create(featureViewModel, url);
+                        }
+                        _logger.LogInformation(ConstantMessages.BulkCreate, pageName);
+                    }                    
                 }
-                return RedirectToAction("Index");
+                return View("Index");
             }
             catch (Exception ex)
             {
@@ -130,18 +137,22 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 if (ModelState.IsValid)
                 {
                     string baseUrl = AppConfigValues.ApiBaseUrl;
-                    var listOfCountries = AppConfigValues.ApiCountry;
-                    List<string> CountrySites = listOfCountries.Split(',').ToList();
 
-                    foreach (string countrySiteName in CountrySites)
+                    if (!string.IsNullOrEmpty(baseUrl)) 
                     {
-                        string url = string.Empty;
-                        url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
-                        var response = await _featureSwitchFactory.Delete(featureName, url);
-                    }
-                    _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                        var listOfCountries = AppConfigValues.ApiCountry;
+                        List<string> CountrySites = listOfCountries.Split(',').ToList();
+
+                        foreach (string countrySiteName in CountrySites)
+                        {
+                            string url = string.Empty;
+                            url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
+                            var response = await _featureSwitchFactory.Delete(featureName, url);
+                        }
+                        _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                    }                     
                 }
-                return RedirectToAction("Index");
+                return View("Index");
             }
             catch (Exception ex)
             {
@@ -165,18 +176,22 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 if (ModelState.IsValid)
                 {
                     string baseUrl = AppConfigValues.ApiBaseUrl;
-                    string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
-                    List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
-                    featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
 
-                    foreach (var feature in featureSwitchViewModelMList)
+                    if (!string.IsNullOrEmpty(baseUrl))
                     {
-                        feature.Flag = false;
-                        var response = await _featureSwitchFactory.Create(feature, url);
-                    }
-                    _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                        string url = UrlBuilder.BaseUrlBuilder(baseUrl, countrySiteName);
+                        List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
+                        featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
+
+                        foreach (var feature in featureSwitchViewModelMList)
+                        {
+                            feature.Flag = false;
+                            var response = await _featureSwitchFactory.Create(feature, url);
+                        }
+                        _logger.LogInformation(ConstantMessages.ResetAll, pageName);
+                    }                      
                 }
-                return RedirectToAction("Index");
+                return View("Index");
             }
             catch (Exception ex)
             {

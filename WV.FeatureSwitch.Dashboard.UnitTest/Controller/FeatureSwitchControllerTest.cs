@@ -1,5 +1,13 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NUnit.Framework;
+using System.Collections.Generic;
+using WV.FeatureSwitch.Dashboard.DAL.APIClient;
+using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory;
 using WV.FeatureSwitch.Dashboard.Web.Controllers;
+using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
 {
@@ -8,109 +16,201 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
     {
         private FeatureSwitchController _featureSwitchController;
 
+        private ApiResponse _apiReponse;
+        private Mock<ILogger<FeatureSwitchController>> _mockLogger;
+
         [SetUp]
         public void SetUp()
         {
+            // Initialise ApiResponse
+            _apiReponse = new ApiResponse();
 
+            //logger
+            _mockLogger = new Mock<ILogger<FeatureSwitchController>>();            
         }
 
-        #region "Index Action"
+        #region Index
 
         /// <summary>
-        /// Can we Load all FeatureSwitches?
+        ///  Validity check on Index  
         /// </summary>
         [Test]
-        public void FeatureSwitch_Index_Valid() 
+        public void FeatureSwitch_Index_Valid()
         {
-            // Arrange
+            #region Arrange
+            
+            List<FeatureModel> objList = new List<FeatureModel>();            
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(objList);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
 
-            // Act
+            #endregion
 
-            // Assert
-        }
+            #region Act
 
-        /// <summary>
-        /// If we have no records in FeatureSwitches?
-        /// </summary>
-        [Test]
-        public void FeatureSwitch_Index_NoRecords() 
-        {
-            // Arrange
+            var actionResult = _featureSwitchController.Index("");
+            var actionResponse = actionResult.Result as ViewResult;
+            var dataResult = actionResponse.ViewData.Model as List<FeatureSwitchViewModel>;
 
-            // Act
+            #endregion
 
-            // Assert
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), dataResult);
+
+            #endregion
         }
 
         #endregion
 
-        #region "Create Action"
+        #region GetAllFeatureLists
 
         /// <summary>
-        /// while we Load a Choosing Event By Id for edit action?
+        /// Return All Feature Lists
         /// </summary>
         [Test]
-        public void ChoosingEvent_CreateLoad_Valid()
+        public void FeatureSwitch_GetAllFeatureLists_Valid()
         {
+            #region Arrange
+            
+            List<FeatureModel> objList = new List<FeatureModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(objList);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
 
-        }
+            #endregion
 
-        ///// <summary>
-        ///// Can we insert a new ChoosingPartyVM?
-        ///// </summary>
-        [Test]
-        public void ChoosingEvent_CreateSave_Valid()
-        {
+            #region Act
 
-        }
+            var actionResult = _featureSwitchController.GetAllFeatureLists();
+            var actionResponse = actionResult.Result;
 
-        /// <summary>
-        /// Can we insert a new ChoosingPartyVM?
-        /// </summary>
-        [Test]
-        public void ChoosingEvent_CreateSave_DuplicateData()
-        {
+            #endregion
 
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResponse);
+
+            #endregion
         }
 
         #endregion
 
-        #region "Reset Action"
+        #region BulkCreate
 
+        /// <summary>
+        ///  Validity check on Bulk Create Method 
+        /// </summary>
+        [Test]
+        public void FeatureSwitch_BulkCreate_Valid()
+        {
+            #region Arrange
 
+            FeatureModel featureTestCreateObject = new FeatureModel()
+            {
+                Id = 1,
+                Name = "TestCreateFeature",
+                Flag = true
+            };
+            IList<FeatureModel> objList = new List<FeatureModel>();
+            _apiReponse.Message = "Success: Bulk Features Created";
+            _apiReponse.ResponseObject = true;
+            _apiReponse.Success = true;
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, featureTestCreateObject);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
+            
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.BulkCreate(featureTestCreateObject);
+            var actionResponse = actionResult.Result as ViewResult;
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+
+            #endregion
+        }
 
         #endregion
 
-        #region "Delete Action"
+        #region BulkDelete
 
         /// <summary>
-        /// while we Load a Choosing Event By Id for delete action?
+        /// Validity check on Bulk Delete Method 
         /// </summary>
         [Test]
-        public void ChoosingEvent_DeleteLoad_SignupExists()
+        public void FeatureSwitch_BulkDelete_Valid()
         {
+            #region Arrange
 
-        }
+            FeatureModel featureTestCreateObject = new FeatureModel()
+            {
+                Id = 1,
+                Name = "TestDeleteFeature",
+                Flag = true
+            };
+            IList<FeatureModel> objList = new List<FeatureModel>();
+            _apiReponse.Message = "Success: Bulk Features Delete";
+            _apiReponse.ResponseObject = true;
+            _apiReponse.Success = true;
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockDelete(_apiReponse, objList, featureTestCreateObject.Name);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
 
-        /// <summary>
-        /// while we Load a Choosing Event By Id for delete action?
-        /// </summary>
-        [Test]
-        public void ChoosingEvent_DeleteLoad_SignupNotExists()
-        {
+            #endregion
 
-        }
+            #region Act
 
-        /// <summary>
-        ///  we delete a ChoosingPartyVM if there is no registeration exists?
-        /// </summary>
-        [Test]
-        public void ChoosingEvent_DeleteConfirmed_Valid()
-        {
+            var actionResult = _featureSwitchController.BulkDelete(featureTestCreateObject.Name);
+            var actionResponse = actionResult.Result as ViewResult;
 
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+
+            #endregion
         }
 
         #endregion
 
+        #region ResetAll
+
+        /// <summary>
+        /// Validity check on Reset All Method 
+        /// </summary>
+        [Test]
+        public void FeatureSwitch_ResetAll_Valid()
+        {
+            #region Arrange
+
+            string countrySite = "sandbox";
+            IList<FeatureModel> objList = new List<FeatureModel>();
+            _apiReponse.Message = "Success: Chosen Country Site Feature Flag Set To Default";
+            _apiReponse.ResponseObject = true;
+            _apiReponse.Success = true;
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockDelete(_apiReponse, objList, countrySite);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.ResetAll(countrySite);
+            var actionResponse = actionResult.Result as ViewResult;
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
+
+            #endregion
+        }
+
+        #endregion
     }
 }
