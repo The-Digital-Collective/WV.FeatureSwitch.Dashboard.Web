@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -15,7 +16,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
     public class FeatureSwitchControllerTest
     {
         private FeatureSwitchController _featureSwitchController;
-
+        private IConfiguration _configuration;
         private ApiResponse _apiReponse;
         private Mock<ILogger<FeatureSwitchController>> _mockLogger;
 
@@ -29,6 +30,29 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _mockLogger = new Mock<ILogger<FeatureSwitchController>>();            
         }
 
+        public FeatureSwitchControllerTest()
+        {
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json");
+            _configuration = builder.Build();
+        }
+
+        [Test]
+        public void CanReadFromConfigurations()
+        {
+            #region Act
+
+            var baseUrl = _configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value;
+            var countrySites = _configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value;
+
+            #endregion
+
+            Assert.NotNull(baseUrl);
+            Assert.NotNull(countrySites);
+            Assert.IsNotEmpty(baseUrl);
+            Assert.IsNotEmpty(countrySites);
+        }
+
         #region Index
 
         /// <summary>
@@ -38,8 +62,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         public void FeatureSwitch_Index_Valid()
         {
             #region Arrange
-            
-            List<FeatureModel> objList = new List<FeatureModel>();            
+
+            List<FeatureModel> objList = new List<FeatureModel>();
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(objList);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
 
@@ -72,7 +96,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         public void FeatureSwitch_GetAllFeatureLists_Valid()
         {
             #region Arrange
-            
+
             List<FeatureModel> objList = new List<FeatureModel>();
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(objList);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
@@ -89,6 +113,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Assert
 
             Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResponse);
+            Assert.IsNotNull(actionResult.Result);
 
             #endregion
         }
@@ -117,7 +142,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Success = true;
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, featureTestCreateObject);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object);
-            
+
             #endregion
 
             #region Act
@@ -130,6 +155,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Assert
 
             Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
+            Assert.IsNull(actionResponse.ControllerName);
+            Assert.AreEqual("Index", actionResponse.ActionName);
 
             #endregion
         }
@@ -171,6 +198,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Assert
 
             Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
+            Assert.IsNull(actionResponse.ControllerName);
+            Assert.AreEqual("Index", actionResponse.ActionName);
 
             #endregion
         }
@@ -207,6 +236,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Assert
 
             Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
+            Assert.IsNull(actionResponse.ControllerName);
+            Assert.AreEqual("Index", actionResponse.ActionName);
 
             #endregion
         }
