@@ -114,10 +114,6 @@
 					"webSiteName": {
 						"value": "[variables('webSiteName')]"
 					},
-					"AzureAd:Instance": {
-						"value": "[parameters('AzureAd:Instance')]"
-					},
-					
 					"ApiConfig:ApiBaseUrl": {
 						"value": "[parameters('ApiConfig:ApiBaseUrl')]"
 					},
