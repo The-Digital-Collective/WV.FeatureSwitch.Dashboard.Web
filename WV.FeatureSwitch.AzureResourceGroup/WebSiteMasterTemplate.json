@@ -1,0 +1,130 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"GitHubFetcherWebServiceURI": {
+			"type": "string"
+		},
+		"_GitHubLocation": {
+			"type": "string"
+		},
+		"_GitHubAccessToken": {
+			"type": "string"
+		},
+		"environmentName": {
+			"type": "string"
+		},
+		"skuName": {
+			"type": "string"
+		},
+		"skuCapacity": {
+			"type": "int"
+		},
+		
+		"ApiConfig:ApiBaseUrl": {
+			"type": "string"
+		},
+		"ApiConfig:ApiToken": {
+			"type": "string"
+		},
+		"ApiConfig:ApiVersion": {
+			"type": "string"
+		}
+		
+	},
+	"variables": {
+		"nestedHostingPlanTemplateFile": "[concat(parameters('GitHubFetcherWebServiceURI'), '?githuburi=', parameters('_GitHubLocation'), '/', 'deployHostingPlan.json', '&githubaccesstoken=', parameters('_GitHubAccessToken'))]",
+		"nestedWebSiteTemplateFile": "[concat(parameters('GitHubFetcherWebServiceURI'), '?githuburi=', parameters('_GitHubLocation'), '/', 'deployWebSite.json', '&githubaccesstoken=', parameters('_GitHubAccessToken'))]",
+		"nestedAppSettingTemplateFile": "[concat(parameters('GitHubFetcherWebServiceURI'), '?githuburi=', parameters('_GitHubLocation'), '/', 'deployAppSetting.json', '&githubaccesstoken=', parameters('_GitHubAccessToken'))]",
+		"apiVersion": "2017-05-10",
+		"contentVersion": "1.0.0.0",
+		"mode": "Incremental",
+		"hostingPlanName": "[toLower(concat(parameters('environmentName'), '-Hosting-Plan'))]",
+		"webSiteName": "[toLower(concat(parameters('environmentName'), '-Webapp'))]",
+		"hostingPlanTemplate": "hostingPlanTemplate",
+		"webSiteTemplate": "webSiteTemplate",
+		"appSettingTemplate": "appSettingTemplate"
+		
+	},
+	"resources": [
+		{
+			"apiVersion": "[variables('apiVersion')]",
+			"name": "[variables('hostingPlanTemplate')]",
+			"type": "Microsoft.Resources/deployments",
+			"properties": {
+				"mode": "[variables('mode')]",
+				"templateLink": {
+					"uri": "[variables('nestedHostingPlanTemplateFile')]",
+					"contentVersion": "[variables('contentVersion')]"
+				},
+				"parameters": {
+					"hostingPlanName": {
+						"value": "[variables('hostingPlanName')]"
+					},
+					"skuName": {
+						"value": "[parameters('skuName')]"
+					},
+					"skuCapacity": {
+						"value": "[parameters('skuCapacity')]"
+					}
+				}
+			}
+		},
+		{
+			"apiVersion": "[variables('apiVersion')]",
+			"name": "[variables('webSiteTemplate')]",
+			"type": "Microsoft.Resources/deployments",
+			"dependsOn": [
+				"[variables('hostingPlanTemplate')]"
+			],
+			"properties": {
+				"mode": "[variables('mode')]",
+				"templateLink": {
+					"uri": "[variables('nestedWebSiteTemplateFile')]",
+					"contentVersion": "[variables('contentVersion')]"
+				},
+				"parameters": {
+					"hostingPlanName": {
+						"value": "[variables('hostingPlanName')]"
+					},
+					"webSiteName": {
+						"value": "[variables('webSiteName')]"
+					},
+					"outputHostingPlanReference": {
+						"value": "[reference(variables('hostingPlanTemplate')).outputs.outputHostingPlanReference.value]"
+					}
+				}
+			}
+		},
+		{
+			"apiVersion": "[variables('apiVersion')]",
+			"name": "[variables('appSettingTemplate')]",
+			"type": "Microsoft.Resources/deployments",
+			"dependsOn": [
+				"[variables('hostingPlanTemplate')]",
+				"[variables('webSiteTemplate')]"
+			],
+			"properties": {
+				"mode": "[variables('mode')]",
+				"templateLink": {
+					"uri": "[variables('nestedAppSettingTemplateFile')]",
+					"contentVersion": "[variables('contentVersion')]"
+				},
+				"parameters": {
+					"webSiteName": {
+						"value": "[variables('webSiteName')]"
+					},
+					"ApiConfig:ApiBaseUrl": {
+						"value": "[parameters('ApiConfig:ApiBaseUrl')]"
+					},
+					"ApiConfig:ApiToken": {
+						"value": "[parameters('ApiConfig:ApiToken')]"
+					},
+					"ApiConfig:ApiVersion": {
+						"value": "[parameters('ApiConfig:ApiVersion')]"
+					}
+				}
+			}
+		}
+	]
+}
