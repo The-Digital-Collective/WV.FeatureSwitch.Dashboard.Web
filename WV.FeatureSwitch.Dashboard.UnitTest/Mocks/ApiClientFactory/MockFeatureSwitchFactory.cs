@@ -1,4 +1,5 @@
 ﻿using Moq;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WV.FeatureSwitch.Dashboard.BAL.Models;
@@ -28,8 +29,28 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
         {
             Setup(x => x.Delete(It.IsAny<string>(), It.IsAny<string>())).
             Returns(Task.Run(() => result));
-            return await Task.FromResult(this); ;
-        }     
+            return await Task.FromResult(this); 
+        }
+        public async Task<MockFeatureSwitchFactory> MockLoadListFeatureModelThrowsException()
+        {
+            Setup(x => x.LoadList(It.IsAny<string>())).
+            Throws<Exception>();
+            return await Task.FromResult(this);
+        }
+
+        public async Task<MockFeatureSwitchFactory> MockCreateFeatureModelThrowsException()
+        {
+            Setup(x => x.Create(It.IsAny<FeatureModel>(), It.IsAny<string>())).
+            Throws<Exception>();
+            return await Task.FromResult(this);
+        }
+
+        public async Task<MockFeatureSwitchFactory> MockDeleteFeatureModelThrowsException()
+        {
+            Setup(x => x.Delete(It.IsAny<string>(), It.IsAny<string>())).
+            Throws<Exception>();
+            return await Task.FromResult(this);
+        }
 
         public bool MockValidFeatureSwitchViewModelFeature(Feature feature)
         {
@@ -39,7 +60,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
 
         public bool MockValidFeatureSwitchViewModelFeatureName(string featureName)
         {
-            var result = (featureName != null) ? true : false;
+            var result = (featureName != string.Empty) ? true : false;
             return result;
         }
 

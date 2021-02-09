@@ -10,84 +10,211 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.ModelValidation
     [TestFixture]
     public class FeatureSwitchValidationTest
     {
-        FeatureSwitchViewModel _featureSwitchViewModel = null;        
+        FeatureSwitchViewModel _featureSwitchViewModelValid = null;
+        FeatureSwitchViewModel _featureSwitchViewModelInvalid = null;
 
         [SetUp]
         public void TestInitialize()
         {
-            _featureSwitchViewModel = new FeatureSwitchViewModel
+            _featureSwitchViewModelValid = new FeatureSwitchViewModel
             {
                 Features = new List<Feature>()
                 {
-                    new Feature() { Id = 1, Name = "feature", Flag = true }
+                    new Feature() { Id = 1, Name = "feature", Flag = true },
                 },
                 CountrySite = "sandbox"
             };
+
+            _featureSwitchViewModelInvalid = new FeatureSwitchViewModel
+            {
+                Features = new List<Feature>()
+                {
+                    new Feature() { Id = 1, Name = string.Empty, Flag = true }
+                },
+                CountrySite = ""
+            };
         }
 
+        #region Test For Validation
 
         [Test]
         public void CreateChoosingParty_ValidationOnValidModelPasses()
         {
-            //Arrange           
-            var context = new ValidationContext(_featureSwitchViewModel, null, null);
+            #region Arrange
+            
+            var context = new ValidationContext(_featureSwitchViewModelValid, null, null);
             var results = new List<ValidationResult>();
 
-            //Act
-            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModel, context, results, true);
+            #endregion
 
-            // Assert
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelValid, context, results, true);
+
+            #endregion
+
+            #region Assert
+
             Assert.IsTrue(isModelStateValid);
             Assert.AreEqual(0, results.Count);
+
+            #endregion
         }
 
         [Test]
-        public void CreateFeatureSwitch_ValidationOnFeatureSwitch()
+        public void CreateFeatureSwitch_ValidationOnFeatureSwitchViewModelObject()
         {
-            //Arrange
-            var context = new ValidationContext(_featureSwitchViewModel.Features[0], null, null);
+            #region Arrange
+
+            var context = new ValidationContext(_featureSwitchViewModelValid.Features[0], null, null);
             var results = new List<ValidationResult>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelFeature(_featureSwitchViewModel.Features[0]);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelFeature(_featureSwitchViewModelValid.Features[0]);
 
-            //Act
-            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModel.Features[0], context, results, true);
+            #endregion
 
-            // Assert
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelValid.Features[0], context, results, true);
+
+            #endregion
+
+            #region Assert
+
             Assert.IsTrue(isModelStateValid);
             Assert.AreEqual(true, mockFeatureSwitchFactoryResult);
-        }    
-        
 
-        [Test]
-        public void FeatureSwitchViewModel_ValidationOnFeatureSwitchViewModelFeatureName()
-        {
-            //Arrange
-            var context = new ValidationContext(_featureSwitchViewModel.Features[0].Name, null, null);
-            var results = new List<ValidationResult>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelFeatureName(_featureSwitchViewModel.Features[0].Name);
-
-            //Act
-            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModel.Features[0].Name, context, results, true);
-
-            // Assert
-            Assert.IsTrue(isModelStateValid);
-            Assert.AreEqual(true, mockFeatureSwitchFactoryResult);
+            #endregion
         }
 
         [Test]
-        public void CreateFeatureSwitch_ValidationOnFeatureSwitchViewModelCountrySite()
+        public void FeatureSwitchViewModel_ValidationOnFeatureSwitchViewModelObjectFeatureName()
         {
-            //Arrange
-            var context = new ValidationContext(_featureSwitchViewModel.CountrySite, null, null);
+            #region Arrange
+
+            var context = new ValidationContext(_featureSwitchViewModelValid.Features[0].Name, null, null);
             var results = new List<ValidationResult>();
-            var mockFeatureSwitchManagerResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelCountrySite(_featureSwitchViewModel.CountrySite);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelFeatureName(_featureSwitchViewModelValid.Features[0].Name);
 
-            //Act
-            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModel.CountrySite, context, results, true);
+            #endregion
 
-            // Assert
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelValid.Features[0].Name, context, results, true);
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsTrue(isModelStateValid);
+            Assert.AreEqual(true, mockFeatureSwitchFactoryResult);
+
+            #endregion
+        }
+
+        [Test]
+        public void CreateFeatureSwitch_ValidationOnFeatureSwitchViewModelObjectCountrySite()
+        {
+            #region Arrange
+
+            var context = new ValidationContext(_featureSwitchViewModelValid.CountrySite, null, null);
+            var results = new List<ValidationResult>();
+            var mockFeatureSwitchManagerResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelCountrySite(_featureSwitchViewModelValid.CountrySite);
+
+            #endregion
+
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelValid.CountrySite, context, results, true);
+
+            #endregion
+
+            #region Assert
+
             Assert.IsTrue(isModelStateValid);
             Assert.AreEqual(true, mockFeatureSwitchManagerResult);
+
+            #endregion
         }
+
+        #endregion
+
+        #region Test For Invalidation
+
+        [Test]
+        public void CreateFeatureSwitch_InvalidationOnFeatureSwitchViewModelObject()
+        {
+            #region Arrange
+
+            var context = new ValidationContext(_featureSwitchViewModelInvalid.Features[0], null, null);
+            var results = new List<ValidationResult>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelFeature(_featureSwitchViewModelInvalid.Features[0]);
+
+            #endregion
+
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelInvalid.Features[0], context, results, true);
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsFalse(isModelStateValid);
+            Assert.AreEqual(true, mockFeatureSwitchFactoryResult);
+
+            #endregion
+        }
+
+        [Test]
+        public void CreateFeatureSwitch_InvalidationOnFeatureSwitchViewModelObjectFeatureName()
+        {
+            #region Arrange
+
+            var context = new ValidationContext(_featureSwitchViewModelInvalid.Features[0], null, null);
+            var results = new List<ValidationResult>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelFeatureName(_featureSwitchViewModelInvalid.Features[0].Name);
+
+            #endregion
+
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelInvalid.Features[0], context, results, true);
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsFalse(isModelStateValid);
+            Assert.AreEqual(false, mockFeatureSwitchFactoryResult);
+
+            #endregion
+        }
+
+        [Test]
+        public void CreateFeatureSwitch_InvalidationOnFeatureSwitchViewModelObjectCountrySite()
+        {
+            #region Arrange
+
+            var context = new ValidationContext(_featureSwitchViewModelInvalid.CountrySite, null, null);
+            var results = new List<ValidationResult>();
+            var mockFeatureSwitchManagerResult = new MockFeatureSwitchFactory().MockValidFeatureSwitchViewModelCountrySite(_featureSwitchViewModelInvalid.CountrySite);
+
+            #endregion
+
+            #region Act
+
+            var isModelStateValid = Validator.TryValidateObject(_featureSwitchViewModelInvalid.CountrySite, context, results, true);
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsTrue(isModelStateValid);
+            Assert.AreEqual(true, mockFeatureSwitchManagerResult);
+
+            #endregion
+        }
+
+        #endregion
     }
 }
