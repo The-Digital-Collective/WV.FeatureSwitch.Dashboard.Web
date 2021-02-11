@@ -12,14 +12,17 @@ namespace WV.FeatureSwitch.Dashboard.Web.Helper
         public static string BaseUrlBuilder(string baseUrl, string country)
         {
             StringBuilder stringbuilder = new StringBuilder(baseUrl);
-
-            if (stringbuilder.ToString().Contains("staging"))
-            {
-                stringbuilder.Replace("staging", country);
-            }
+            
             if (stringbuilder.ToString().Contains("sandbox"))
             {
-                stringbuilder.Replace("sandbox", country);
+                if (country == "ics")
+                {
+                    stringbuilder.Replace("sandbox", country+"-wv");
+                }
+                else
+                {
+                    stringbuilder.Replace("sandbox", country);
+                }
             }
             return stringbuilder.ToString();
         }

@@ -17,31 +17,31 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         private readonly IFeatureSwitchFactory _featureSwitchFactory;
         private readonly ILogger<FeatureSwitchController> _logger;
         private readonly string pageName = "Feature Switch";
-        
+
         public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger)
         {
             _featureSwitchFactory = featureSwitchFactory;
-            _logger = logger;            
+            _logger = logger;
         }
 
         // GET: FeatureSwitch       
         public async Task<ActionResult> Index(string notification)
         {
             try
-            {                    
+            {
                 List<FeatureSwitchViewModel> featureViewModel = await GetAllFeatureLists();
 
                 ViewBag.Notification = !string.IsNullOrEmpty(notification) ? notification : "";
                 _logger.LogInformation(ConstantMessages.Load.Replace("{pageName}", pageName));
 
-                return View(featureViewModel); 
+                return View(featureViewModel);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ConstantMessages.Error);                
+                _logger.LogError(ex, ConstantMessages.Error);
                 return RedirectToAction("Error", "Home");
             }
-        }        
+        }
 
         /// <summary>
         /// Get All Feature Lists
@@ -60,7 +60,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
                 featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
 
-                FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel() 
+                FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel()
                 {
                     Features = new List<Feature>(),
                 };
@@ -76,9 +76,63 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 }
 
                 featureSwitchViewModel.CountrySite = country;
-                featureViewModel.Add(featureSwitchViewModel);                
+                featureViewModel.Add(featureSwitchViewModel);
             }
             return featureViewModel;
+        }
+        
+        /// <summary>
+        /// Update Feaure Flag
+        /// </summary>
+        /// <param name="flag"></param>
+        /// <param name="featureNames"></param>
+        /// <returns></returns>
+        public async Task<ActionResult> Update(bool flag, string inputFeatureNames)
+        {
+            ViewBag.Action = "Update";
+
+            try
+            {
+                List<FeatureModel> newFeatureViewModelList = new List<FeatureModel>();
+                List<string> inputFeatureNameList = new List<string>();
+                inputFeatureNameList = inputFeatureNames.Split(',').ToList();             
+                List<FeatureSwitchViewModel> featureSwitchViewModelList = await GetAllFeatureLists();
+
+                foreach (var featureSwitchViewModel in featureSwitchViewModelList)
+                {
+                    foreach (var feature in featureSwitchViewModel.Features)
+                    {
+                        foreach (var inputFeatureName in inputFeatureNameList)
+                        {
+                            if (feature.Name == inputFeatureName)
+                            {
+                                FeatureModel newFeatureModel = new FeatureModel() 
+                                {
+                                    Id = feature.Id,
+                                    Name = feature.Name,
+                                    Flag = flag
+                                };
+                                newFeatureViewModelList.Add(newFeatureModel);
+                            }
+                        }                        
+                    }
+                }
+                
+                string baseUrl = AppConfigValues.ApiBaseUrl;
+                
+                foreach(var featureModel in newFeatureViewModelList)               
+                {
+                    var response = await _featureSwitchFactory.Create(featureModel, baseUrl);
+                }
+
+                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
+                return RedirectToAction("Index", newFeatureViewModelList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ConstantMessages.Error, ex);
+                return RedirectToAction("Error", "Home");
+            }
         }
 
         /// <summary>
