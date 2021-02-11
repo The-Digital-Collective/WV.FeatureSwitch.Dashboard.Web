@@ -1,6 +1,7 @@
 ﻿using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using WV.FeatureSwitch.Dashboard.BAL.Models;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
@@ -18,10 +19,18 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
             return await Task.FromResult(this);
         }
 
-        public async Task<MockFeatureSwitchFactory> MockCreate(ApiResponse result, IList<FeatureModel> objList, FeatureModel objCreate)
+        public async Task<MockFeatureSwitchFactory> MockCreate(ApiResponse result, IList<FeatureModel> objList, FeatureModel featureModel)
         {
             Setup(x => x.Create(It.IsAny<FeatureModel>(), It.IsAny<string>())).
             Returns(Task.Run(() => result));
+            if (featureModel != null && Convert.ToBoolean(result.Success))
+            {
+                var objectItem = objList.Where(x => x.Name == featureModel.Name).FirstOrDefault();
+                if (objectItem == null)
+                {
+                    objList.Add(featureModel);
+                }
+            }
             return await Task.FromResult(this);
         }
 
@@ -29,6 +38,11 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
         {
             Setup(x => x.Delete(It.IsAny<string>(), It.IsAny<string>())).
             Returns(Task.Run(() => result));
+            if (!string.IsNullOrEmpty(featureName) && Convert.ToBoolean(result.Success))
+            {
+                var objDelete = objList.Where(x => x.Name == featureName).FirstOrDefault();
+                objList.Remove(objDelete);
+            }
             return await Task.FromResult(this); 
         }
         public async Task<MockFeatureSwitchFactory> MockLoadListFeatureModelThrowsException()
