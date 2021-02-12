@@ -142,6 +142,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
             Assert.IsFalse(dataResult);
             Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
+            Assert.AreEqual(_mockLogger.Invocations.Count, 1);
 
             #endregion
         }
