@@ -30,6 +30,13 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
                 {
                     objList.Add(featureModel);
                 }
+                else
+                {
+                    foreach (var item in objList)
+                    {
+                        item.Flag = false;
+                    }
+                }
             }
             return await Task.FromResult(this);
         }

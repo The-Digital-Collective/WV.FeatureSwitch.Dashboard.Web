@@ -3,9 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using WV.FeatureSwitch.Dashboard.BAL.Models;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
 using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 using WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory;
@@ -88,8 +91,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            List<FeatureModel> objList = new List<FeatureModel>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(objList);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(_featureModels);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
 
             #endregion
@@ -106,7 +108,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
 
             Assert.IsInstanceOf(typeof(ViewResult), actionResponse);
             Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), dataResult);
-            Assert.IsTrue(dataResult.Count > 0);
+            Assert.IsTrue(dataResult.Count > 0);            
 
             #endregion
         }
@@ -156,8 +158,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            List<FeatureModel> objList = new List<FeatureModel>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(objList);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(_featureModels);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
 
             #endregion
@@ -165,6 +166,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Act
 
             var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
+            var featureList = actionResult[0].Features;
 
             #endregion
 
@@ -173,6 +175,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
             Assert.IsNotNull(actionResult);
             Assert.IsTrue(actionResult.Count > 0);
+            Assert.AreEqual(featureList.Count, _featureModels.Count);
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(Feature));
 
             #endregion
         }
@@ -192,7 +196,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             FeatureModel featureTestCreateObject = new FeatureModel()
             {
                 Id = 1,
-                Name = "TestCreateFeature",
+                Name = "test 6",
                 Flag = true
             };
             IList<FeatureModel> objList = new List<FeatureModel>();
@@ -220,7 +224,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.AreEqual("Index", actionResponse.ActionName);
             Assert.IsNotNull(_apiReponse);
             Assert.IsTrue(dataResult);
-            Assert.AreEqual("Success: Bulk Features Created", dataMessage);
+            Assert.AreEqual("Success: Bulk Features Created", dataMessage);            
 
             #endregion
         }
@@ -233,10 +237,10 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             FeatureModel featureTestCreateObject = new FeatureModel()
             {
                 Id = 1,
-                Name = "TestCreateFeature",
+                Name = "test 1",
                 Flag = true
             };
-            var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockCreateFeatureModelThrowsException();
+            var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockCreateFeatureModelThrowsException();            
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration);
 
             #endregion
@@ -258,6 +262,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(_apiReponse);
             Assert.IsFalse(dataResult);
             Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
+            Assert.AreEqual(_mockLogger.Invocations.Count, 1);
 
             #endregion
         }
@@ -279,6 +284,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Success = true;
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, _featureModels, featureTestCreateObject);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            var originalFeature = _featureModels.Where(x => x.Name == featureTestCreateObject.Name).FirstOrDefault();
 
             #endregion
 
@@ -300,6 +306,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Bulk Features Created", dataMessage);
             Assert.AreNotEqual(originalFeatureModelsCount, _featureModels.Count);
+            Assert.Contains(featureTestCreateObject, _featureModels);
+            Assert.AreEqual(originalFeature.Name, featureTestCreateObject.Name);
 
             #endregion
         }
@@ -319,7 +327,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             FeatureModel featureTestCreateObject = new FeatureModel()
             {
                 Id = 1,
-                Name = "Test 1",
+                Name = "test 1",
                 Flag = true
             };
             IList<FeatureModel> objList = new List<FeatureModel>();
@@ -385,6 +393,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(_apiReponse);
             Assert.IsFalse(dataResult);
             Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
+            Assert.AreEqual(_mockLogger.Invocations.Count, 1);
 
             #endregion
         }
@@ -426,7 +435,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(_apiReponse);
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Bulk Features Delete", dataMessage);
-            Assert.AreNotEqual(originalFeatureModelsCount, _featureModels.Count);
+            Assert.AreNotEqual(originalFeatureModelsCount, _featureModels.Count); 
+            Assert.That(_featureModels, Has.No.Member(featureTestCreateObject));
 
             #endregion
         }
@@ -447,7 +457,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             {
                 Id = 1,
                 Name = "test 1",
-                Flag = true
+                Flag = false
             };
             string countrySite = "sandbox";
             IList<FeatureModel> objList = new List<FeatureModel>();
@@ -455,7 +465,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, featureTestCreateObject);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);            
 
             #endregion
 
@@ -476,7 +486,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(_apiReponse);
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Chosen Country Site Feature Flag Set To Default", dataMessage);
-
+           
             #endregion
         }
 
@@ -514,6 +524,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(_apiReponse);
             Assert.IsFalse(dataResult);
             Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
+            Assert.AreEqual(_mockLogger.Invocations.Count, 1);
 
             #endregion
         }
@@ -531,6 +542,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             };
             string countrySite = "sandbox";
             var originalFeatureModelsCount = _featureModels.Count;
+            var featureWithOriginalFlagStatus = _featureModels.Where(x => x.Name == featureTestCreateObject.Name).FirstOrDefault();
             _apiReponse.Message = "Success: Chosen Country Site Feature Flag Set To Default";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
@@ -557,6 +569,8 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Chosen Country Site Feature Flag Set To Default", dataMessage);
             Assert.AreEqual(originalFeatureModelsCount, _featureModels.Count);
+            Assert.IsFalse(_featureModels.All(x => x.Flag));
+            CollectionAssert.AllItemsAreInstancesOfType(_featureModels, typeof(FeatureModel));
 
             #endregion
         }

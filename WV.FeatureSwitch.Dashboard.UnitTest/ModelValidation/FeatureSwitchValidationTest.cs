@@ -38,7 +38,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.ModelValidation
         #region Test For Validation
 
         [Test]
-        public void CreateChoosingParty_ValidationOnValidModelPasses()
+        public void CreateFeatureSwitch_ValidationOnValidModelPasses()
         {
             #region Arrange
             
