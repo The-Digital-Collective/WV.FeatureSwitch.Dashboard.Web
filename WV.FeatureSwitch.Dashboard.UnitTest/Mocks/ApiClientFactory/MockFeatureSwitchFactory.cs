@@ -19,7 +19,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
             return await Task.FromResult(this);
         }
 
-        public async Task<MockFeatureSwitchFactory> MockCreate(ApiResponse result, IList<FeatureModel> objList, FeatureModel featureModel)
+        public async Task<MockFeatureSwitchFactory> MockCreate(ApiResponse result, IList<FeatureModel> objList, FeatureModel featureModel, string method)
         {
             Setup(x => x.Create(It.IsAny<FeatureModel>(), It.IsAny<string>())).
             Returns(Task.Run(() => result));
@@ -32,10 +32,21 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
                 }
                 else
                 {
-                    foreach (var item in objList)
+                    if (method == "update")
                     {
-                        item.Flag = false;
+                        foreach (var item in objList)
+                        {
+                            item.Flag = featureModel.Flag;
+                        }
                     }
+                    
+                    if(method == "resetAll")
+                    {
+                        foreach (var item in objList)
+                        {
+                            item.Flag = false;
+                        }
+                    }                    
                 }
             }
             return await Task.FromResult(this);

@@ -22,14 +22,32 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         private readonly string pageName = "Feature Switch";
         private string _baseUrl = "";
         private string _listOfCountries = "";
+        private List<FeatureSwitchViewModel> featureSwitchViewModelList;
 
         public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration)
         {
             _featureSwitchFactory = featureSwitchFactory;
             _logger = logger;
             response = new ApiResponse();
+            _baseUrl = AppConfigValues.ApiBaseUrl;
+            _listOfCountries = AppConfigValues.ApiCountry;
+        }
+
+        /// <summary>
+        /// For Testing
+        /// </summary>
+        /// <param name="featureSwitchFactory"></param>
+        /// <param name="logger"></param>
+        /// <param name="configuration"></param>
+        /// <param name="testFeatureModelList"></param>
+        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration, List<FeatureSwitchViewModel> testFeatureModelList)
+        {
+            _featureSwitchFactory = featureSwitchFactory;
+            _logger = logger;
+            response = new ApiResponse();
             _baseUrl = (AppConfigValues.ApiBaseUrl == null) ? configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value : AppConfigValues.ApiBaseUrl;
             _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
+            featureSwitchViewModelList = testFeatureModelList;
         }
 
         // GET: FeatureSwitch       
@@ -93,12 +111,12 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             }            
             return featureViewModel;
         }
-        
+
         /// <summary>
         /// Update Feaure Flag
         /// </summary>
         /// <param name="flag"></param>
-        /// <param name="featureNames"></param>
+        /// <param name="inputFeatureNames"></param>
         /// <returns></returns>
         public async Task<ActionResult> Update(bool flag, string inputFeatureNames)
         {
@@ -108,8 +126,12 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             {
                 List<FeatureModel> newFeatureViewModelList = new List<FeatureModel>();
                 List<string> inputFeatureNameList = new List<string>();
-                inputFeatureNameList = inputFeatureNames.Split(',').ToList();             
-                List<FeatureSwitchViewModel> featureSwitchViewModelList = await GetAllFeatureLists();
+                inputFeatureNameList = inputFeatureNames.Split(',').ToList();
+
+                if (featureSwitchViewModelList == null)
+                {
+                    featureSwitchViewModelList = await GetAllFeatureLists();
+                }
 
                 foreach (var featureSwitchViewModel in featureSwitchViewModelList)
                 {
@@ -135,16 +157,17 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 
                 foreach(var featureModel in newFeatureViewModelList)               
                 {
-                    var response = await _featureSwitchFactory.Create(featureModel, baseUrl);
+                    response = await _featureSwitchFactory.Create(featureModel, baseUrl);
                 }
 
                 _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
-                return RedirectToAction("Index", newFeatureViewModelList);
+                return RedirectToAction("Index", response);
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ConstantMessages.Error, ex);
-                return RedirectToAction("Error", "Home");
+                _logger.LogError(ex, ConstantMessages.Error);
+                response.Message = ConstantMessages.Error;
+                return RedirectToAction("Index", response);
             }
         }
 
