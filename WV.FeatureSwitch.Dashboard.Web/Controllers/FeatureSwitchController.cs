@@ -24,30 +24,14 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         private string _listOfCountries = "";
         private List<FeatureSwitchViewModel> featureSwitchViewModelList;
 
-        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration)
-        {
-            _featureSwitchFactory = featureSwitchFactory;
-            _logger = logger;
-            response = new ApiResponse();
-            _baseUrl = AppConfigValues.ApiBaseUrl;
-            _listOfCountries = AppConfigValues.ApiCountry;
-        }
-
-        /// <summary>
-        /// For Testing
-        /// </summary>
-        /// <param name="featureSwitchFactory"></param>
-        /// <param name="logger"></param>
-        /// <param name="configuration"></param>
-        /// <param name="testFeatureModelList"></param>
-        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration, List<FeatureSwitchViewModel> testFeatureModelList)
+        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration, IEnumerable<FeatureSwitchViewModel> testFeatureModelList)
         {
             _featureSwitchFactory = featureSwitchFactory;
             _logger = logger;
             response = new ApiResponse();
             _baseUrl = (AppConfigValues.ApiBaseUrl == null) ? configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value : AppConfigValues.ApiBaseUrl;
             _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
-            featureSwitchViewModelList = testFeatureModelList;
+            featureSwitchViewModelList = testFeatureModelList.ToList();
         }
 
         // GET: FeatureSwitch       
@@ -128,7 +112,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 List<string> inputFeatureNameList = new List<string>();
                 inputFeatureNameList = inputFeatureNames.Split(',').ToList();
 
-                if (featureSwitchViewModelList == null)
+                if (featureSwitchViewModelList == null || featureSwitchViewModelList.Count == 0)
                 {
                     featureSwitchViewModelList = await GetAllFeatureLists();
                 }
