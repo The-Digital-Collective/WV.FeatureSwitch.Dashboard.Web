@@ -22,7 +22,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         private readonly string pageName = "Feature Switch";
         private string _baseUrl = "";
         private string _listOfCountries = "";
-        private List<FeatureSwitchViewModel> featureSwitchViewModelList;
+        private List<FeatureSwitchViewModel> _featureSwitchViewModelList;
 
         public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration, IEnumerable<FeatureSwitchViewModel> testFeatureModelList)
         {
@@ -31,7 +31,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             response = new ApiResponse();
             _baseUrl = (AppConfigValues.ApiBaseUrl == null) ? configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value : AppConfigValues.ApiBaseUrl;
             _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
-            featureSwitchViewModelList = testFeatureModelList.ToList();
+            _featureSwitchViewModelList = testFeatureModelList.ToList();
         }
 
         // GET: FeatureSwitch       
@@ -112,12 +112,12 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 List<string> inputFeatureNameList = new List<string>();
                 inputFeatureNameList = inputFeatureNames.Split(',').ToList();
 
-                if (featureSwitchViewModelList == null || featureSwitchViewModelList.Count == 0)
+                if (_featureSwitchViewModelList == null || _featureSwitchViewModelList.Count == 0)
                 {
-                    featureSwitchViewModelList = await GetAllFeatureLists();
+                    _featureSwitchViewModelList = await GetAllFeatureLists();
                 }
 
-                foreach (var featureSwitchViewModel in featureSwitchViewModelList)
+                foreach (var featureSwitchViewModel in _featureSwitchViewModelList)
                 {
                     foreach (var feature in featureSwitchViewModel.Features)
                     {
