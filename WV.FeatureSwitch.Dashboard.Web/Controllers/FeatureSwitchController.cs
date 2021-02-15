@@ -118,32 +118,26 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 }
 
                 foreach (var featureSwitchViewModel in _featureSwitchViewModelList)
-                {
+                {                  
+                    string url = UrlBuilder.BaseUrlBuilder(_baseUrl, featureSwitchViewModel.CountrySite);
                     foreach (var feature in featureSwitchViewModel.Features)
                     {
                         foreach (var inputFeatureName in inputFeatureNameList)
                         {
                             if (feature.Name == inputFeatureName)
                             {
-                                FeatureModel newFeatureModel = new FeatureModel() 
+                                FeatureModel newFeatureModel = new FeatureModel()
                                 {
                                     Id = feature.Id,
                                     Name = feature.Name,
                                     Flag = flag
                                 };
-                                newFeatureViewModelList.Add(newFeatureModel);
+                                response = await _featureSwitchFactory.Create(newFeatureModel, url);
                             }
-                        }                        
+                        }
                     }
-                }
+                }              
                 
-                string baseUrl = AppConfigValues.ApiBaseUrl;
-                
-                foreach(var featureModel in newFeatureViewModelList)               
-                {
-                    response = await _featureSwitchFactory.Create(featureModel, baseUrl);
-                }
-
                 _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
                 return RedirectToAction("Index", response);
             }
