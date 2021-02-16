@@ -9,7 +9,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WV.FeatureSwitch.Dashboard.BAL.Models;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
 using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 using WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory;
@@ -27,7 +26,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         private Mock<ILogger<FeatureSwitchController>> _mockLogger;
         private List<FeatureModel> _featureModels;
         private List<FeatureSwitchViewModel> _featureSwitchViewModels;
-        private List<Feature> _features;
+        private List<FeatureModel> _features;
         private StringBuilder _stringBuilder = new StringBuilder();
 
         [SetUp]
@@ -52,13 +51,13 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             };
 
             //Creating Dummy Feature List
-            _features = new List<Feature>()
+            _features = new List<FeatureModel>()
             {
-                new Feature (){Id = 1, Name="test 1", Flag = true},
-                new Feature (){Id = 2, Name="test 2", Flag = true},
-                new Feature (){Id = 3, Name="test 3", Flag = false},
-                new Feature (){Id = 4, Name="test 4", Flag = true},
-                new Feature (){Id = 5, Name="test 5", Flag = false},
+                new FeatureModel (){Id = 1, Name="test 1", Flag = true},
+                new FeatureModel (){Id = 2, Name="test 2", Flag = true},
+                new FeatureModel (){Id = 3, Name="test 3", Flag = false},
+                new FeatureModel (){Id = 4, Name="test 4", Flag = true},
+                new FeatureModel (){Id = 5, Name="test 5", Flag = false},
             };
 
             //Creating Dummy Feature Switch View Model List
@@ -206,7 +205,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(actionResult);
             Assert.IsTrue(actionResult.Count > 0);
             Assert.AreEqual(featureList.Count, _featureModels.Count);
-            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(Feature));
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
 
             #endregion
         }

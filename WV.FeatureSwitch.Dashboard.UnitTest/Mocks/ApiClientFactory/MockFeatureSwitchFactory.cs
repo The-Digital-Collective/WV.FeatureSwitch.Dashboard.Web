@@ -84,7 +84,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
             return await Task.FromResult(this);
         }
 
-        public bool MockValidFeatureSwitchViewModelFeature(Feature feature)
+        public bool MockValidFeatureSwitchViewModelFeature(FeatureModel feature)
         {
             var result = (feature != null) ? true : false;
             return result;

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using WV.FeatureSwitch.Dashboard.BAL.Models;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
 using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
 using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
@@ -61,6 +60,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         public async Task<List<FeatureSwitchViewModel>> GetAllFeatureLists()
         {            
             List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
+            FeatureSwitchViewModel featureSwitchViewModel;
 
             if (!string.IsNullOrEmpty(_baseUrl))
             {
@@ -69,25 +69,13 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                 foreach (string country in CountrySites)
                 {
                     string url = UrlBuilder.BaseUrlBuilder(_baseUrl, country);
-                    List<FeatureModel> featureSwitchViewModelMList = new List<FeatureModel>();
-                    featureSwitchViewModelMList = await _featureSwitchFactory.LoadList(url);
+                    List<FeatureModel> featureSwitchViewModelList = await _featureSwitchFactory.LoadList(url);
 
-                    FeatureSwitchViewModel featureSwitchViewModel = new FeatureSwitchViewModel()
-                    {
-                        Features = new List<Feature>(),
-                    };
+                    featureSwitchViewModel = new FeatureSwitchViewModel();                    
 
-                    if (featureSwitchViewModelMList != null)
+                    if (featureSwitchViewModelList != null)
                     {
-                        foreach (var item in featureSwitchViewModelMList)
-                        {
-                            featureSwitchViewModel.Features.Add(new Feature
-                            {
-                                Id = item.Id,
-                                Name = item.Name,
-                                Flag = item.Flag
-                            });
-                        }
+                        featureSwitchViewModel.Features = featureSwitchViewModelList;
                         featureSwitchViewModel.CountrySite = country;
                         featureViewModel.Add(featureSwitchViewModel);
                     }                    
