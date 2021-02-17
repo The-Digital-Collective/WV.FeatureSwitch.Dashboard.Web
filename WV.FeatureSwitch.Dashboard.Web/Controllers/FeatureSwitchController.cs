@@ -96,37 +96,33 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
 
             try
             {
-                List<FeatureModel> newFeatureViewModelList = new List<FeatureModel>();
-                List<string> inputFeatureNameList = new List<string>();
-                inputFeatureNameList = inputFeatureNames.Split(',').ToList();
-
-                if (_featureSwitchViewModelList == null || _featureSwitchViewModelList.Count == 0)
+                if (!string.IsNullOrEmpty(inputFeatureNames))
                 {
-                    _featureSwitchViewModelList = await GetAllFeatureLists();
-                }
+                    List<string> inputFeatureNameList = inputFeatureNames.Split(',').ToList();
 
-                foreach (var featureSwitchViewModel in _featureSwitchViewModelList)
-                {                  
-                    string url = UrlBuilder.BaseUrlBuilder(_baseUrl, featureSwitchViewModel.CountrySite);
-                    foreach (var feature in featureSwitchViewModel.Features)
+                    if (_featureSwitchViewModelList == null || _featureSwitchViewModelList.Count == 0)
                     {
-                        foreach (var inputFeatureName in inputFeatureNameList)
+                        _featureSwitchViewModelList = await GetAllFeatureLists();
+                    }
+                    
+                    foreach (var featureSwitchViewModel in _featureSwitchViewModelList)
+                    {
+                        string url = UrlBuilder.BaseUrlBuilder(_baseUrl, featureSwitchViewModel.CountrySite);
+                        List<FeatureModel> featureModels = featureSwitchViewModel.Features;
+                        var result = featureModels.Select(x => x.Name).Intersect(inputFeatureNameList);
+
+                        if (result.Any())
                         {
-                            if (feature.Name == inputFeatureName)
+                            foreach (var item in result)
                             {
-                                FeatureModel newFeatureModel = new FeatureModel()
-                                {
-                                    Id = feature.Id,
-                                    Name = feature.Name,
-                                    Flag = flag
-                                };
+                                var newFeatureModel = new FeatureModel() { Name = item, Flag = flag };
                                 response = await _featureSwitchFactory.Create(newFeatureModel, url);
                             }
                         }
-                    }
-                }              
+                    }                    
+                    _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
+                }
                 
-                _logger.LogInformation(ConstantMessages.Load.Replace("{event}", pageName));
                 return RedirectToAction("Index", response);
             }
             catch (Exception ex)
