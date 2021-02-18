@@ -8,7 +8,6 @@ namespace WV.FeatureSwitch.Dashboard.Web.ViewModels
     {      
         public List<FeatureModel> Features { get; set; }
 
-        [Required]
         public string CountrySite { get; set; }
     }
 }
