@@ -10,51 +10,113 @@
 <script>
     $("#Notification").fadeOut(6000);
 </script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-@using (Html.BeginForm("BulkCreate", "FeatureSwitch"))
-{
-    <button>Bulk Create</button>
-}
-
-@using (Html.BeginForm("BulkDelete", "FeatureSwitch"))
-{
-    <input type="text" id="CountrySiteName" name="CountrySiteName" value="delete">
-    <br>
-    <input type="submit" value="delete">
-}
-
-@foreach (var item in Model)
-{
-    <Table>
+<div class="table-responsive">
+    <table class="table">
         <thead>
             <tr>
-                <th>
-                    @using (Html.BeginForm("ResetAll", "FeatureSwitch"))
+                <th scope="col"></th>
+                <th scope="col"></th>
+                <th scope="col">
+                    @using (Html.BeginForm("BulkCreate", "FeatureSwitch"))
                     {
-                        <input hidden="hidden" type="text" id="CountrySiteName" name="CountrySiteName" value="@item.CountrySite">
+                        <button>Create Feature Switch</button>
+                    }
+                </th>
+                <th scope="col">
+                    @using (Html.BeginForm("BulkDelete", "FeatureSwitch"))
+                    {
+                        <input hidden="hidden" type="text" id="CountrySiteName" name="CountrySiteName" value="Delete Feature Switch">
                         <br>
-                        <input type="submit" value="Reset">
+                        <input type="submit" value="Delete Feature Switch">
                     }
                 </th>
             </tr>
             <tr>
-                <th>@item.CountrySite</th>
-            </tr>
-            <tr>
-                <th scope="col">Id</th>
-                <th scope="col">Name</th>
-                <th scope="col">Flag</th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+                <th scope="col"></th>
+                <th scope="col">
+                    @using (Html.BeginForm("Update", "FeatureSwitch"))
+                    {
+                        <label for="flag">Update selected features to: </label>
+                        <input hidden="hidden" id="inputFeatureNames" name="inputFeatureNames" />
+                        <select id="flag" name="flag">
+                            <option value="True">True</option>
+                            <option value="False">False</option>
+                        </select>
+                        <input type="submit" id="UpdateBtn" value="Update" onclick="Update">
+                    }
+                </th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var record in item.Features)
+
+            @foreach (var item in Model)
             {
-                <tr>
-                    <td>@record.Id</td>
-                    <td><a asp-action="Edit" asp-route-name="@record.Name">@record.Name</a></td>
-                    <td>@record.Flag</td>
+                <tr class="accordion-toggle collapsed" id="accordion1" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
+                    <td class="expand-button">@item.CountrySite</td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        @using (Html.BeginForm("ResetAll", "FeatureSwitch"))
+                        {
+                            <input hidden="hidden" type="text" name="CountrySiteName" value="@item.CountrySite">
+                            <br>
+                            <input type="submit" value="Reset">
+                        }
+                    </td>
+
+                </tr>
+                <tr class="hide-table-padding">
+                    <td></td>
+                    <td colspan="3">
+                        <div id="collapseOne" class="collapse in p-3">
+                            <div class="row">
+                                <div class="col-4">Select</div>
+                                <div class="col-4">Name</div>
+                                <div class="col-4">Flag</div>
+                            </div>
+
+                            @foreach (var record in item.Features)
+                            {
+                                <div id="SelectedFeature" class="row">
+                                    <div id="myDiv" class="col-4">
+                                        <input class="source" type="checkbox" name="type" value="@record.Name">                                        
+                                    </div>
+                                    <div class="col-4">@record.Name</div>
+                                    <div class="col-4">
+                                        @if (@record.Flag == true)
+                                        {
+                                            <p>On</p>
+                                        }
+                                        else
+                                        {
+                                            <p>Off</p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </td>
                 </tr>
             }
         </tbody>
-    </Table>
+    </table>
+</div>
+
+@section scripts{
+
+        <script>
+            $('#myDiv input[type=checkbox]').change(function () {
+
+                var featureArray = new Array();
+                $("#myDiv input[type='checkbox']:checked").each(function () {
+                    featureArray[featureArray.length] = this.value;
+                });
+                console.log(featureArray);
+                $('#inputFeatureNames').val(featureArray);
+            });
+        </script>  
 }

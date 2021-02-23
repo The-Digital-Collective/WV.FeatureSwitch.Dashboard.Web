@@ -18,7 +18,6 @@ namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
 
         public ApiClient()
         {            
-            //_baseEndpoint = new Uri(AppConfigValues.ApiBaseUrl);
             _secretToken = Convert.ToString(AppConfigValues.ApiToken);
             _apiVersion = "api-version=" + Convert.ToString(AppConfigValues.ApiVersion);
             _httpClient = new HttpClient();

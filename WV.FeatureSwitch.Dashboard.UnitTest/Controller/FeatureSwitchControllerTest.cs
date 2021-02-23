@@ -8,7 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using WV.FeatureSwitch.Dashboard.BAL.Models;
+using System.Text;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
 using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 using WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory;
@@ -25,6 +25,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         private ApiResponse _apiReponse;
         private Mock<ILogger<FeatureSwitchController>> _mockLogger;
         private List<FeatureModel> _featureModels;
+        private List<FeatureSwitchViewModel> _featureSwitchViewModels;
+        private List<FeatureModel> _features;
+        private StringBuilder _stringBuilder = new StringBuilder();
 
         [SetUp]
         public void SetUp()
@@ -45,7 +48,30 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
                 new FeatureModel (){Id = 3, Name="test 3", Flag = false},
                 new FeatureModel (){Id = 4, Name="test 4", Flag = true},
                 new FeatureModel (){Id = 5, Name="test 5", Flag = false},
-            };                   
+            };
+
+            //Creating Dummy Feature List
+            _features = new List<FeatureModel>()
+            {
+                new FeatureModel (){Id = 1, Name="test 1", Flag = true},
+                new FeatureModel (){Id = 2, Name="test 2", Flag = true},
+                new FeatureModel (){Id = 3, Name="test 3", Flag = false},
+                new FeatureModel (){Id = 4, Name="test 4", Flag = true},
+                new FeatureModel (){Id = 5, Name="test 5", Flag = false},
+            };
+
+            //Creating Dummy Feature Switch View Model List
+            _featureSwitchViewModels = new List<FeatureSwitchViewModel>()
+            {
+                new FeatureSwitchViewModel() {Features = _features, CountrySite = "sandbox"}
+            };
+            
+            // StringBuilder of Comma-Seperated Feature Names
+            foreach (var feature in _featureModels)
+            {
+                _stringBuilder.Append(feature.Name + ",");
+            }
+            _stringBuilder.Length--;
 
             #endregion
         }
@@ -91,8 +117,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(_featureModels);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
@@ -122,8 +149,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Arrange
 
             List<FeatureModel> objList = new List<FeatureModel>();
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadListFeatureModelThrowsException();
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
@@ -158,9 +186,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         public void GetAllFeatureLists_CallsLoadList_ReturnsAValidListOfFeatureSwitchViewModelObjects()
         {
             #region Arrange
-
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(_featureModels);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
@@ -177,7 +205,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(actionResult);
             Assert.IsTrue(actionResult.Count > 0);
             Assert.AreEqual(featureList.Count, _featureModels.Count);
-            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(Feature));
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
 
             #endregion
         }
@@ -194,7 +222,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "test 6",
@@ -204,14 +232,15 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Message = "Success: Bulk Features Created";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, featureTestCreateObject);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, testFeatureModel, null);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.BulkCreate(featureTestCreateObject);
+            var actionResult = _featureSwitchController.BulkCreate(testFeatureModel);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
@@ -235,20 +264,21 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "test 1",
                 Flag = true
             };
-            var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockCreateFeatureModelThrowsException();            
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration);
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockCreateFeatureModelThrowsException();
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.BulkCreate(featureTestCreateObject);
+            var actionResult = _featureSwitchController.BulkCreate(testFeatureModel);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
@@ -273,7 +303,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 6,
                 Name = "Test 6",
@@ -283,15 +313,16 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Message = "Success: Bulk Features Created";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, _featureModels, featureTestCreateObject);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
-            var originalFeature = _featureModels.Where(x => x.Name == featureTestCreateObject.Name).FirstOrDefault();
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, _featureModels, testFeatureModel, null);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
+            var originalFeature = _featureModels.Where(x => x.Name == testFeatureModel.Name).FirstOrDefault();
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.BulkCreate(featureTestCreateObject);
+            var actionResult = _featureSwitchController.BulkCreate(testFeatureModel);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
@@ -307,8 +338,170 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Bulk Features Created", dataMessage);
             Assert.AreNotEqual(originalFeatureModelsCount, _featureModels.Count);
-            Assert.Contains(featureTestCreateObject, _featureModels);
-            Assert.AreEqual(originalFeature.Name, featureTestCreateObject.Name);
+            Assert.Contains(testFeatureModel, _featureModels);
+            Assert.AreEqual(originalFeature.Name, testFeatureModel.Name);
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Update
+
+        /// <summary>
+        /// Validity check on Update Method 
+        /// </summary>
+        [Test]
+        public void Update_CallsCreate_SuccessfullyReturnsToIndexPage()
+        {
+            #region Arrange
+
+            FeatureModel testFeatureModel= new FeatureModel()
+            {
+                Id = 1,
+                Name = "test 1",
+                Flag = false
+            };
+            IList<FeatureModel> objList = new List<FeatureModel>();
+            _apiReponse.Message = "Record Updated: Record Already Exists";
+            _apiReponse.ResponseObject = true;
+            _apiReponse.Success = true;
+            string method = "update";
+            string updateFeatureNames = _stringBuilder.ToString();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, testFeatureModel, method);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, _featureSwitchViewModels);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.Update(false, updateFeatureNames);
+            var actionResponse = actionResult.Result as RedirectToActionResult;
+            var _mockResponse = actionResponse.RouteValues.Values as IList;
+            var dataResult = Convert.ToBoolean(_mockResponse[0]);
+            var dataMessage = _mockResponse[1];
+            bool containsUpdatedFeatureName = false;
+
+            foreach (var feature in _featureModels)
+            {
+                if (updateFeatureNames.Contains(feature.Name))
+                    containsUpdatedFeatureName = true;
+            };
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
+            Assert.AreEqual("Index", actionResponse.ActionName);
+            Assert.IsNotNull(_apiReponse);
+            Assert.IsTrue(dataResult);
+            Assert.AreEqual("Record Updated: Record Already Exists", dataMessage);
+            Assert.IsTrue(containsUpdatedFeatureName);
+
+            #endregion
+        }
+
+        [Test]
+        public void Update_WhenExceptionThrown_ShowsError()
+        {
+            #region Arrange
+
+            FeatureModel testFeatureModel= new FeatureModel()
+            {
+                Id = 1,
+                Name = "test 1",
+                Flag = false
+            };
+            string updateFeatureNames = _stringBuilder.ToString();
+            var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockCreateFeatureModelThrowsException();
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration, _featureSwitchViewModels);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.Update(testFeatureModel.Flag, testFeatureModel.Name);
+            var actionResponse = actionResult.Result as RedirectToActionResult;
+            var _mockResponse = actionResponse.RouteValues.Values as IList;
+            var dataResult = Convert.ToBoolean(_mockResponse[0]);
+            var dataMessage = _mockResponse[1];
+            bool containsUpdatedFeatureName = false;
+
+            foreach (var feature in _featureModels)
+            {
+                if (updateFeatureNames.Contains(feature.Name))
+                    containsUpdatedFeatureName = true;
+            };
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
+            Assert.AreEqual("Index", actionResponse.ActionName);
+            Assert.IsNotNull(_apiReponse);
+            Assert.IsFalse(dataResult);
+            Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
+            Assert.AreEqual(_mockLogger.Invocations.Count, 1);
+            Assert.IsTrue(containsUpdatedFeatureName);
+
+            #endregion
+        }
+
+        [Test]
+        public void Update_CallsCreate_UpdateFlagOfExistingFeature()
+        {
+            #region Arrange
+
+            FeatureModel testFeatureModel= new FeatureModel()
+            {
+                Id = 1,
+                Name = "test 1",
+                Flag = false
+            };
+            var originalFeatureSwitchViewModelsCount = _featureSwitchViewModels.Count;
+            _apiReponse.Message = "Record Updated: Record Already Exists";
+            _apiReponse.ResponseObject = true;
+            _apiReponse.Success = true;
+            string method = "update";
+            string updateFeatureNames = _stringBuilder.ToString();
+            var featureWithOriginalFlagStatus = _featureModels.Where(x => x.Name == testFeatureModel.Name).FirstOrDefault().Flag;
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, _featureModels, testFeatureModel, method);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, _featureSwitchViewModels);
+            var featureWithUpdatedFlagStatus = _featureModels.Where(x => x.Name == testFeatureModel.Name).FirstOrDefault().Flag;        
+          
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.Update(false, updateFeatureNames);
+            var actionResponse = actionResult.Result as RedirectToActionResult;
+            var _mockResponse = actionResponse.RouteValues.Values as IList;
+            var dataResult = Convert.ToBoolean(_mockResponse[0]);
+            var dataMessage = _mockResponse[1];
+            bool containsUpdatedFeatureName = false;
+
+            foreach (var feature in _featureModels)
+            {
+                if (updateFeatureNames.Contains(feature.Name))
+                    containsUpdatedFeatureName = true;
+            };
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(RedirectToActionResult), actionResponse);
+            Assert.AreEqual("Index", actionResponse.ActionName);
+            Assert.IsNotNull(_apiReponse);
+            Assert.IsTrue(dataResult);
+            Assert.AreEqual("Record Updated: Record Already Exists", dataMessage);
+            Assert.AreEqual(originalFeatureSwitchViewModelsCount, _featureSwitchViewModels.Count);
+            Assert.AreNotEqual(featureWithOriginalFlagStatus, featureWithUpdatedFlagStatus);
+            Assert.IsFalse(featureWithUpdatedFlagStatus);
+            Assert.IsTrue(containsUpdatedFeatureName);
+            CollectionAssert.AllItemsAreInstancesOfType(_featureSwitchViewModels, typeof(FeatureSwitchViewModel));
 
             #endregion
         }
@@ -325,7 +518,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "test 1",
@@ -335,14 +528,15 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Message = "Success: Bulk Features Delete";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockDelete(_apiReponse, objList, featureTestCreateObject.Name);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockDelete(_apiReponse, objList, testFeatureModel.Name);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.BulkDelete(featureTestCreateObject.Name);
+            var actionResult = _featureSwitchController.BulkDelete(testFeatureModel.Name);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
@@ -366,20 +560,21 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "TestDeleteFeature",
                 Flag = true
             };
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
             var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockDeleteFeatureModelThrowsException();
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.BulkDelete(featureTestCreateObject.Name);
+            var actionResult = _featureSwitchController.BulkDelete(testFeatureModel.Name);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
@@ -404,7 +599,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "test 1",
@@ -414,14 +609,15 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Message = "Success: Bulk Features Delete";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockDelete(_apiReponse, _featureModels, featureTestCreateObject.Name);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockDelete(_apiReponse, _featureModels, testFeatureModel.Name);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.BulkDelete(featureTestCreateObject.Name);
+            var actionResult = _featureSwitchController.BulkDelete(testFeatureModel.Name);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
@@ -437,7 +633,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Bulk Features Delete", dataMessage);
             Assert.AreNotEqual(originalFeatureModelsCount, _featureModels.Count); 
-            Assert.That(_featureModels, Has.No.Member(featureTestCreateObject));
+            Assert.That(_featureModels, Has.No.Member(testFeatureModel));
 
             #endregion
         }
@@ -454,7 +650,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "test 1",
@@ -465,18 +661,21 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             _apiReponse.Message = "Success: Chosen Country Site Feature Flag Set To Default";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, featureTestCreateObject);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);            
+            string method = "resetAll";
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, testFeatureModel, method);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);            
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.ResetAll(countrySite, featureTestCreateObject);
+            var actionResult = _featureSwitchController.ResetAll(countrySite, testFeatureModel);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
             var dataMessage = _mockResponse[1];
+            var validCountrySite = _configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value.Contains(countrySite);
 
             #endregion
 
@@ -487,6 +686,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(_apiReponse);
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Success: Chosen Country Site Feature Flag Set To Default", dataMessage);
+            Assert.IsTrue(validCountrySite);
            
             #endregion
         }
@@ -496,25 +696,27 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "TestCreateFeature",
                 Flag = true
             };
             string countrySite = "sandbox";
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
             var mockFeatureSwitchFactory = new MockFeatureSwitchFactory().MockCreateFeatureModelThrowsException();
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactory.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.ResetAll(countrySite, featureTestCreateObject);
+            var actionResult = _featureSwitchController.ResetAll(countrySite, testFeatureModel);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
             var dataMessage = _mockResponse[1];
+            var validCountrySite = _configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value.Contains(countrySite);
 
             #endregion
 
@@ -526,6 +728,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsFalse(dataResult);
             Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
             Assert.AreEqual(_mockLogger.Invocations.Count, 1);
+            Assert.IsTrue(validCountrySite);
 
             #endregion
         }
@@ -535,7 +738,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
-            FeatureModel featureTestCreateObject = new FeatureModel()
+            FeatureModel testFeatureModel= new FeatureModel()
             {
                 Id = 1,
                 Name = "test 1",
@@ -543,22 +746,25 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             };
             string countrySite = "sandbox";
             var originalFeatureModelsCount = _featureModels.Count;
-            var featureWithOriginalFlagStatus = _featureModels.Where(x => x.Name == featureTestCreateObject.Name).FirstOrDefault();
+            var featureWithOriginalFlagStatus = _featureModels.Where(x => x.Name == testFeatureModel.Name).FirstOrDefault();
             _apiReponse.Message = "Success: Chosen Country Site Feature Flag Set To Default";
             _apiReponse.ResponseObject = true;
             _apiReponse.Success = true;
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, _featureModels, featureTestCreateObject);
-            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+            string method = "resetAll";
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, _featureModels, testFeatureModel, method);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
 
             #region Act
 
-            var actionResult = _featureSwitchController.ResetAll(countrySite, featureTestCreateObject);
+            var actionResult = _featureSwitchController.ResetAll(countrySite, testFeatureModel);
             var actionResponse = actionResult.Result as RedirectToActionResult;
             var _mockResponse = actionResponse.RouteValues.Values as IList;
             var dataResult = Convert.ToBoolean(_mockResponse[0]);
             var dataMessage = _mockResponse[1];
+            var validCountrySite = _configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value.Contains(countrySite);
 
             #endregion
 
@@ -572,6 +778,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.AreEqual(originalFeatureModelsCount, _featureModels.Count);
             Assert.IsFalse(_featureModels.All(x => x.Flag));
             CollectionAssert.AllItemsAreInstancesOfType(_featureModels, typeof(FeatureModel));
+            Assert.IsTrue(validCountrySite);
 
             #endregion
         }

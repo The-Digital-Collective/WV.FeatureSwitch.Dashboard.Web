@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using WV.FeatureSwitch.Dashboard.BAL.Models;
+using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 using WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
@@ -18,18 +18,18 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.ModelValidation
         {
             _featureSwitchViewModelValid = new FeatureSwitchViewModel
             {
-                Features = new List<Feature>()
+                Features = new List<FeatureModel>()
                 {
-                    new Feature() { Id = 1, Name = "feature", Flag = true },
+                    new FeatureModel() { Id = 1, Name = "feature", Flag = true },
                 },
                 CountrySite = "sandbox"
             };
 
             _featureSwitchViewModelInvalid = new FeatureSwitchViewModel
             {
-                Features = new List<Feature>()
+                Features = new List<FeatureModel>()
                 {
-                    new Feature() { Id = 1, Name = string.Empty, Flag = true }
+                    new FeatureModel() { Id = 1, Name = string.Empty, Flag = true }
                 },
                 CountrySite = ""
             };
