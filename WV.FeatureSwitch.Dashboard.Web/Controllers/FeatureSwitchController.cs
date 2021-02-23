@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WV.FeatureSwitch.Dashboard.DAL.APIClient;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using WV.FeatureSwitch.Dashboard.Web.APIClient;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
 using WV.FeatureSwitch.Dashboard.Web.Helper;
+using WV.FeatureSwitch.Dashboard.Web.Models;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web.Controllers
@@ -32,6 +33,16 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
             // Only for testing purpose
             _featureSwitchViewModelList = testFeatureModelList.ToList();
+        }
+
+        [ActivatorUtilitiesConstructor]
+        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration, IEnumerable<FeatureSwitchViewModel> test)
+        {
+            _featureSwitchFactory = featureSwitchFactory;
+            _logger = logger;
+            response = new ApiResponse();
+            _baseUrl = (AppConfigValues.ApiBaseUrl == null) ? configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value : AppConfigValues.ApiBaseUrl;
+            _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
         }
 
         // GET: FeatureSwitch       
@@ -60,7 +71,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         /// </summary>
         /// <returns></returns>
         public async Task<List<FeatureSwitchViewModel>> GetAllFeatureLists()
-        {            
+        {
             List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
             FeatureSwitchViewModel featureSwitchViewModel;
 

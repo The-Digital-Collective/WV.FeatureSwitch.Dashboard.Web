@@ -3,9 +3,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.Factory;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using System;
+using System.Configuration;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web
 {
@@ -33,8 +37,18 @@ namespace WV.FeatureSwitch.Dashboard.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
+            Serilog.Formatting.Json.JsonFormatter jsonFormatter = new Serilog.Formatting.Json.JsonFormatter();
+            string connectionString = GetAzureConnectionString(AppConfigValues.StorageAccountName, AppConfigValues.StorageAccountKey);
+
+            Log.Logger = new LoggerConfiguration()
+                       .ReadFrom.Configuration(Configuration)
+                       .WriteTo.AzureBlobStorage(jsonFormatter, connectionString, Serilog.Events.LogEventLevel.Information, AppConfigValues.LogStorageContainer, "{yyyy}/{MM}/FeatureSwitchDashboard/log-{dd}.json", false, TimeSpan.FromDays(1))
+                       .CreateLogger();
+            // logging
+            loggerFactory.AddSerilog();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -48,6 +62,7 @@ namespace WV.FeatureSwitch.Dashboard.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseSerilogRequestLogging();
             app.UseRouting();
 
             app.UseAuthorization();
@@ -58,6 +73,11 @@ namespace WV.FeatureSwitch.Dashboard.Web
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+        private static string GetAzureConnectionString(string accountName, string accountKey)
+        {
+            string azureConnection = "DefaultEndpointsProtocol=https;AccountName=" + accountName + ";AccountKey=" + accountKey + ";EndpointSuffix=core.windows.net";
+            return azureConnection;
         }
     }
 }

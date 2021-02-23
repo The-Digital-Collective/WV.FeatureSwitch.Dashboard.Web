@@ -8,11 +8,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using WV.FeatureSwitch.Dashboard.BAL.Models;
 using WV.FeatureSwitch.Dashboard.DAL.APIClient;
 using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
 using WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory;
+using WV.FeatureSwitch.Dashboard.Web.APIClient;
 using WV.FeatureSwitch.Dashboard.Web.Controllers;
+using WV.FeatureSwitch.Dashboard.Web.Models;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
@@ -206,6 +208,60 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsTrue(actionResult.Count > 0);
             Assert.AreEqual(featureList.Count, _featureModels.Count);
             CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
+
+            #endregion
+        }
+
+        [Test]
+        public void GetAllFeatureLists_CallsLoadList_ReturnsAnEmptyListOfFeatureModels()
+        {
+            #region Arrange
+
+            List<FeatureModel> testFeatureModels = new List<FeatureModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(testFeatureModels);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
+            var featureList = actionResult[0].Features;
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
+            Assert.IsNotNull(actionResult);
+            Assert.AreEqual(actionResult.Count,  1);
+            Assert.AreEqual(featureList.Count, testFeatureModels.Count);
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(Feature));
+
+            #endregion
+        }
+
+        [Test]
+        public void GetAllFeatureLists_WhenExceptionThrown_ReturnEmptyListOfFeatureSwitchModels()
+        {
+            #region Arrange
+
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadListFeatureModelThrowsException();
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
+            Assert.IsNotNull(actionResult);
+            Assert.AreEqual(actionResult.Count, 0);
 
             #endregion
         }
