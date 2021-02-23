@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
-using System.Configuration;
 using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory;
 using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;

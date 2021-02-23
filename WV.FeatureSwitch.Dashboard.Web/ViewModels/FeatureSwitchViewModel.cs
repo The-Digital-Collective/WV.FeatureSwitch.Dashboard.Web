@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using WV.FeatureSwitch.Dashboard.Web.Models;
 
 namespace WV.FeatureSwitch.Dashboard.Web.ViewModels
