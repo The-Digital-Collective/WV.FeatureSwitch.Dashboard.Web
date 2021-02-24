@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,8 @@ using WV.FeatureSwitch.Dashboard.Web.Helper;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web.Controllers
-{
+{    
+    [Authorize]
     public class FeatureSwitchController : Controller
     {
         private readonly IFeatureSwitchFactory _featureSwitchFactory;
@@ -91,6 +93,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             return featureViewModel;
         }
 
+        [Authorize("Admin")]
         /// <summary>
         /// Update Feaure Flag
         /// </summary>

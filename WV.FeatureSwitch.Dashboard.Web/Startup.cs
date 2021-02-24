@@ -1,11 +1,16 @@
+using System;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.Factory;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web
 {
@@ -15,9 +20,9 @@ namespace WV.FeatureSwitch.Dashboard.Web
         {
             Configuration = configuration;
 
-            AppConfigValues.ApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value;            
+            AppConfigValues.ApiBaseUrl = Configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value;
             AppConfigValues.ApiToken = Configuration.GetSection("ApiConfig").GetSection("ApiToken").Value;
-            AppConfigValues.ApiVersion = Configuration.GetSection("ApiConfig").GetSection("ApiVersion").Value;      
+            AppConfigValues.ApiVersion = Configuration.GetSection("ApiConfig").GetSection("ApiVersion").Value;
             AppConfigValues.ApiCountry = Configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value;
         }
 
@@ -26,14 +31,31 @@ namespace WV.FeatureSwitch.Dashboard.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();         
+            services.AddAuthorization(options => {
+                options.AddPolicy("Admin", policyBuilder =>
+                policyBuilder.RequireClaim("groups",
+                Configuration.GetValue<string>("AzureADGroup:TestGroupId")));
+            });
+
+            services.AddAuthentication(sharedOptions =>
+            {
+                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            })
+            .AddAzureAd(options => Configuration.Bind("AzureAd", options))
+            .AddCookie();
+
+            services.AddMvc();
+
+            services.AddControllersWithViews();
 
             // Use same instance within a scope and create new instance for different http request and out of scope.
             services.AddScoped<IFeatureSwitchFactory, FeatureSwitchFactory>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -42,7 +64,6 @@ namespace WV.FeatureSwitch.Dashboard.Web
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
@@ -50,6 +71,7 @@ namespace WV.FeatureSwitch.Dashboard.Web
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -57,7 +79,14 @@ namespace WV.FeatureSwitch.Dashboard.Web
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
             });
+        }
+
+        private static string GetAzureConnectionString(string accountName, string accountKey)
+        {
+            string azureConnection = "DefaultEndpointsProtocol=https;AccountName=" + accountName + ";AccountKey=" + accountKey + ";EndpointSuffix=core.windows.net";
+            return azureConnection;
         }
     }
 }

@@ -46,7 +46,7 @@
                             <option value="True">True</option>
                             <option value="False">False</option>
                         </select>
-                        <input type="submit" id="UpdateBtn" value="Update" onclick="Update">
+                        <input type="submit" id="UpdateBtn" name="UpdateBtn" value="Update" disabled="disabled" onclick="Update">
                     }
                 </th>
             </tr>
@@ -117,6 +117,14 @@
                 });
                 console.log(featureArray);
                 $('#inputFeatureNames').val(featureArray);
+
+                $(document).ready(function () {
+                    if (!featureArray.length) {
+                        document.getElementById("UpdateBtn").disabled = true;
+                    } else {
+                        document.getElementById("UpdateBtn").disabled = false;
+                    }
+                });
             });
         </script>  
 }
