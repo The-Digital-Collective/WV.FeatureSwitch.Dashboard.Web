@@ -8,6 +8,7 @@
         public static string LogStorageContainer { get; set; }
         public static string StorageAccountKey { get; set; }
         public static string StorageAccountName { get; set; }
+        public static string XSLTStorageContainer { get; set; }
         public static string ApiCountry { get; set; }
     }
 }

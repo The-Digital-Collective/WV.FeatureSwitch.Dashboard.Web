@@ -202,7 +202,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(countrySite);
             Assert.IsTrue(actionResult.Count >= 1);
             Assert.AreEqual(featureList.Count, testFeatureModels.Count);
-            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(Feature));
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
 
             #endregion
         }
