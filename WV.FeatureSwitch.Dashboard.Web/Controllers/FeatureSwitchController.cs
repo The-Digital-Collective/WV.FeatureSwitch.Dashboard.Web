@@ -46,6 +46,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             _featureSwitchViewModelList = testFeatureModelList.ToList();
         }
 
+        [AllowAnonymous]
         // GET: FeatureSwitch       
         public async Task<ActionResult> Index(string notification)
         {

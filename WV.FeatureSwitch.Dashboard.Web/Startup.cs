@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using System;
 using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory;
 using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
@@ -40,7 +39,7 @@ namespace WV.FeatureSwitch.Dashboard.Web
             services.AddAuthorization(options => {
                 options.AddPolicy("Admin", policyBuilder =>
                 policyBuilder.RequireClaim("groups",
-                Configuration.GetValue<string>("AzureADGroup:TestGroupId")));
+                Configuration.GetValue<string>("AzureADGroup:AdminGroupId")));
             });
 
             services.AddAuthentication(sharedOptions =>
@@ -61,7 +60,7 @@ namespace WV.FeatureSwitch.Dashboard.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             Serilog.Formatting.Json.JsonFormatter jsonFormatter = new Serilog.Formatting.Json.JsonFormatter();
             string connectionString = GetAzureConnectionString(AppConfigValues.StorageAccountName, AppConfigValues.StorageAccountKey);
@@ -96,7 +95,7 @@ namespace WV.FeatureSwitch.Dashboard.Web
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=FeatureSwitch}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
         }
