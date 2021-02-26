@@ -4,11 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WV.FeatureSwitch.Dashboard.DAL.APIClient;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using WV.FeatureSwitch.Dashboard.Web.APIClient;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
 using WV.FeatureSwitch.Dashboard.Web.Helper;
+using WV.FeatureSwitch.Dashboard.Web.Models;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web.Controllers
@@ -23,6 +24,16 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         private string _listOfCountries = "";
         private List<FeatureSwitchViewModel> _featureSwitchViewModelList;
 
+        public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration)
+        {
+            _featureSwitchFactory = featureSwitchFactory;
+            _logger = logger;
+            response = new ApiResponse();
+            _baseUrl = (AppConfigValues.ApiBaseUrl == null) ? configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value : AppConfigValues.ApiBaseUrl;
+            _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
+        }
+
+        [ActivatorUtilitiesConstructor]
         public FeatureSwitchController(IFeatureSwitchFactory featureSwitchFactory, ILogger<FeatureSwitchController> logger, IConfiguration configuration, IEnumerable<FeatureSwitchViewModel> testFeatureModelList)
         {
             _featureSwitchFactory = featureSwitchFactory;
@@ -30,7 +41,6 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             response = new ApiResponse();
             _baseUrl = (AppConfigValues.ApiBaseUrl == null) ? configuration.GetSection("ApiConfig").GetSection("ApiBaseUrl").Value : AppConfigValues.ApiBaseUrl;
             _listOfCountries = (AppConfigValues.ApiCountry == null) ? configuration.GetSection("ApiConfig").GetSection("ApiCountry").Value : AppConfigValues.ApiCountry;
-            // Only for testing purpose
             _featureSwitchViewModelList = testFeatureModelList.ToList();
         }
 
@@ -41,7 +51,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             {
                 // Call all the Feature Switch Models, to be displayed/returned to the View
                 List<FeatureSwitchViewModel> featureViewModel = await GetAllFeatureLists();
-
+ 
                 ViewBag.Notification = !string.IsNullOrEmpty(notification) ? notification : "";
                 _logger.LogInformation(ConstantMessages.Load.Replace("{pageName}", pageName));
 
@@ -60,35 +70,43 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         /// </summary>
         /// <returns></returns>
         public async Task<List<FeatureSwitchViewModel>> GetAllFeatureLists()
-        {            
-            List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
-            FeatureSwitchViewModel featureSwitchViewModel;
-
-            // Check if we have a valid (not empty) URL (being passed in throught appsettings.json)
-            if (!string.IsNullOrEmpty(_baseUrl))
+        {
+            try
             {
-                // Split the Comma-Seperated string of feature names and add them to a list
-                List<string> CountrySites = _listOfCountries.Split(',').ToList();
+                FeatureSwitchViewModel featureSwitchViewModel;
+                List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
 
-                // Loop through all Feature Switch View Models for all country sites
-                foreach (string country in CountrySites)
+                // Check if we have a valid (not empty) URL (being passed in throught appsettings.json)
+                if (!string.IsNullOrEmpty(_baseUrl))
                 {
-                    // For each Feature Switch Model, create the appropriate url for it's country site
-                    string url = UrlBuilder.BaseUrlBuilder(_baseUrl, country);
-                    List<FeatureModel> featureSwitchViewModelList = await _featureSwitchFactory.LoadList(url);
+                    // Split the Comma-Seperated string of feature names and add them to a list
+                    List<string> CountrySites = _listOfCountries.Split(',').ToList();
 
-                    featureSwitchViewModel = new FeatureSwitchViewModel();
-
-                    // Add each Feature Switch View Model to a list of Feature Switch View Model
-                    if (featureSwitchViewModelList != null)
+                    // Loop through all Feature Switch View Models for all country sites
+                    foreach (string country in CountrySites)
                     {
-                        featureSwitchViewModel.Features = featureSwitchViewModelList;
-                        featureSwitchViewModel.CountrySite = country;
-                        featureViewModel.Add(featureSwitchViewModel);
-                    }                    
+                        // For each Feature Switch Model, create the appropriate url for it's country site
+                        string url = UrlBuilder.BaseUrlBuilder(_baseUrl, country);
+                        List<FeatureModel> featureSwitchViewModelList = await _featureSwitchFactory.LoadList(url);
+
+                        featureSwitchViewModel = new FeatureSwitchViewModel();
+
+                        // Add each Feature Switch View Model to a list of Feature Switch View Model
+                        if (featureSwitchViewModelList != null)
+                        {
+                            featureSwitchViewModel.Features = featureSwitchViewModelList;
+                            featureSwitchViewModel.CountrySite = country;
+                            featureViewModel.Add(featureSwitchViewModel);
+                        }
+                    }
                 }
-            }            
-            return featureViewModel;
+                return featureViewModel;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, ConstantMessages.Error);
+                return new List<FeatureSwitchViewModel>(); ;
+            }           
         }
 
         /// <summary>

@@ -3,9 +3,9 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
-namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
+namespace WV.FeatureSwitch.Dashboard.Web.APIClient
 {
     public class ApiClient : IDisposable
     {
@@ -47,8 +47,7 @@ namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
         /// Common method for making POST File calls
         /// </summary>
         public async Task<ApiResponse> PostFileAsync(Uri requestUrl, MultipartFormDataContent file)
-        {
-            //AddDefaultHeaders();            
+        {          
             var response = await _httpClient.PostAsync(requestUrl.ToString(), file);
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadAsStringAsync();
@@ -82,7 +81,6 @@ namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
         {           
             Uri endpoint = new Uri(new Uri(_baseEndpoint), queryString);
             var uriBuilder = new UriBuilder(endpoint);
-            //uriBuilder.Query = _apiVersion + (!string.IsNullOrEmpty(queryString) ? "&" + queryString : "");
             return uriBuilder.Uri;
         }
         private string FormatUri(string relativePath)

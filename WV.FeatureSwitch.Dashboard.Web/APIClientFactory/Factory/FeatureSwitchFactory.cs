@@ -2,24 +2,23 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WV.FeatureSwitch.Dashboard.DAL.APIClient;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.DAL.Helper;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using WV.FeatureSwitch.Dashboard.Web.APIClient;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.Web.Helper;
+using WV.FeatureSwitch.Dashboard.Web.Models;
 
 
-namespace WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.Factory
+
+namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory
 {
     public class FeatureSwitchFactory : IFeatureSwitchFactory
     {
 
         protected APIClient.ApiClient apiClient;
-        protected Serilog _serilog;
 
         public FeatureSwitchFactory()
         {
             this.apiClient = new APIClient.ApiClient();
-            _serilog = new Serilog();
         }
 
         public FeatureSwitchFactory(APIClient.ApiClient _apiClient)
@@ -40,8 +39,7 @@ namespace WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.Factory
             }
             catch (Exception ex)
             {
-                await _serilog.Log(baseUrl, ex.Message);
-                return new List<FeatureModel>();
+                throw ex;
             }
         }
 
@@ -60,7 +58,6 @@ namespace WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.Factory
             }
             catch (Exception ex)
             {
-                await _serilog.Log(baseUrl, ex.Message);
                 throw ex;
             }
         }
@@ -77,7 +74,6 @@ namespace WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.Factory
             }
             catch (Exception ex)
             {
-                await _serilog.Log(baseUrl, ex.Message);
                 throw ex;
             }
         }

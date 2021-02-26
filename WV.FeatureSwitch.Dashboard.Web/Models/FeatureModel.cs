@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WV.FeatureSwitch.Dashboard.DAL.ViewModels
+namespace WV.FeatureSwitch.Dashboard.Web.Models
 {
     public class FeatureModel
     {      

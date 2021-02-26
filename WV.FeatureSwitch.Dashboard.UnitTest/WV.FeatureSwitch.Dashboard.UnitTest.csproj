@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WV.FeatureSwitch.Dashboard.DAL\WV.FeatureSwitch.Dashboard.DAL.csproj" />
     <ProjectReference Include="..\WV.FeatureSwitch.Dashboard.Web\WV.FeatureSwitch.Dashboard.Web.csproj" />
   </ItemGroup>
 

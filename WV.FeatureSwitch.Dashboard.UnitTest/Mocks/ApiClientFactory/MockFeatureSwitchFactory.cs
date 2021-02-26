@@ -3,10 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WV.FeatureSwitch.Dashboard.BAL.Models;
-using WV.FeatureSwitch.Dashboard.DAL.APIClient;
-using WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.DAL.ViewModels;
+using WV.FeatureSwitch.Dashboard.Web.APIClient;
+using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
+using WV.FeatureSwitch.Dashboard.Web.Models;
 
 namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
 {
