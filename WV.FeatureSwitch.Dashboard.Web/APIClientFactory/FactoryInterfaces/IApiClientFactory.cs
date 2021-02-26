@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WV.FeatureSwitch.Dashboard.DAL.APIClient;
+using WV.FeatureSwitch.Dashboard.Web.APIClient;
 
-namespace WV.FeatureSwitch.Dashboard.DAL.ApiClientFactory.FactoryInterfaces
+namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces
 {
     public interface IApiClientFactory<T> : IDisposable
     {

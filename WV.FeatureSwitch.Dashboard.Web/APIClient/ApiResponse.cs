@@ -1,4 +1,4 @@
-﻿namespace WV.FeatureSwitch.Dashboard.DAL.APIClient
+﻿namespace WV.FeatureSwitch.Dashboard.Web.APIClient
 {
     public class ApiResponse
     {
