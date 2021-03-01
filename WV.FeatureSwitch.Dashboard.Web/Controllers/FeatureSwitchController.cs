@@ -14,8 +14,8 @@ using WV.FeatureSwitch.Dashboard.Web.Models;
 using WV.FeatureSwitch.Dashboard.Web.ViewModels;
 
 namespace WV.FeatureSwitch.Dashboard.Web.Controllers
-{    
-    [Authorize]
+{
+    [Authorize("Admin")] 
     public class FeatureSwitchController : Controller
     {
         private readonly IFeatureSwitchFactory _featureSwitchFactory;
@@ -111,13 +111,13 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
             }           
         }
 
-        [Authorize("Admin")]
         /// <summary>
-        /// Update Feaure Flag
+        /// Update Feature Flag
         /// </summary>
         /// <param name="flag">New Flag Status</param>
         /// <param name="inputFeatureNames">Names of all Features to be updated</param>
         /// <returns></returns>
+        [Authorize("Admin")]
         public async Task<ActionResult> Update(bool flag, string inputFeatureNames)
         {
             ViewBag.Action = "Update";
