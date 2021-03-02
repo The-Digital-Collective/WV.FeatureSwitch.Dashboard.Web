@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -393,7 +394,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             string updateFeatureNames = _stringBuilder.ToString();
             var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockCreate(_apiReponse, objList, testFeatureModel, method);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, _featureSwitchViewModels);
-
+           
             #endregion
 
             #region Act
@@ -411,6 +412,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
                     containsUpdatedFeatureName = true;
             };
 
+            var attribute = _featureSwitchController.GetType().GetMethod("Update").GetCustomAttributes(typeof(AuthorizeAttribute), true);
+            var authorizeAttribute = attribute[0] as AuthorizeAttribute;
+
             #endregion
 
             #region Assert
@@ -421,6 +425,10 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsTrue(dataResult);
             Assert.AreEqual("Record Updated: Record Already Exists", dataMessage);
             Assert.IsTrue(containsUpdatedFeatureName);
+            Assert.IsNotNull(attribute);
+            Assert.AreEqual(1, attribute.Length);
+            Assert.AreEqual("Admin", authorizeAttribute.Policy);
+            Assert.AreEqual(typeof(AuthorizeAttribute), authorizeAttribute.GetType());
 
             #endregion
         }
@@ -457,6 +465,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
                     containsUpdatedFeatureName = true;
             };
 
+            var attribute = _featureSwitchController.GetType().GetMethod("Update").GetCustomAttributes(typeof(AuthorizeAttribute), true);
+            var authorizeAttribute = attribute[0] as AuthorizeAttribute;
+
             #endregion
 
             #region Assert
@@ -468,6 +479,10 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.AreEqual("Error Occurred in While processing your request.", dataMessage);
             Assert.AreEqual(_mockLogger.Invocations.Count, 1);
             Assert.IsTrue(containsUpdatedFeatureName);
+            Assert.IsNotNull(attribute);
+            Assert.AreEqual(1, attribute.Length);
+            Assert.AreEqual("Admin", authorizeAttribute.Policy);
+            Assert.AreEqual(typeof(AuthorizeAttribute), authorizeAttribute.GetType());
 
             #endregion
         }
@@ -511,6 +526,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
                     containsUpdatedFeatureName = true;
             };
 
+            var attribute = _featureSwitchController.GetType().GetMethod("Update").GetCustomAttributes(typeof(AuthorizeAttribute), true);
+            var authorizeAttribute = attribute[0] as AuthorizeAttribute;
+
             #endregion
 
             #region Assert
@@ -525,6 +543,10 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsFalse(featureWithUpdatedFlagStatus);
             Assert.IsTrue(containsUpdatedFeatureName);
             CollectionAssert.AllItemsAreInstancesOfType(_featureSwitchViewModels, typeof(FeatureSwitchViewModel));
+            Assert.IsNotNull(attribute);
+            Assert.AreEqual(1, attribute.Length);
+            Assert.AreEqual("Admin", authorizeAttribute.Policy);
+            Assert.AreEqual(typeof(AuthorizeAttribute), authorizeAttribute.GetType());
 
             #endregion
         }
