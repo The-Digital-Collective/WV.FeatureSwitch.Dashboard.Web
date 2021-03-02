@@ -11,10 +11,10 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Mocks.ApiClientFactory
 {
     public class MockFeatureSwitchFactory : Mock<IFeatureSwitchFactory>
     {
-        public async Task<MockFeatureSwitchFactory> MockLoadList(List<FeatureModel> result)
+        public async Task<MockFeatureSwitchFactory> MockLoadList(ApiResponse result)
         {
             Setup(x => x.LoadList(It.IsAny<string>())).
-            Returns(Task.Run(() => new List<FeatureModel>(result)));
+            Returns(Task.Run(() => result));
             return await Task.FromResult(this);
         }
 

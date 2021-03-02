@@ -26,10 +26,21 @@ namespace WV.FeatureSwitch.Dashboard.Web.APIClient
         public async Task<ApiResponse> GetAsync<T>(Uri requestUrl)
         {
             AddDefaultHeaders();
-            var response = await _httpClient.GetAsync(requestUrl, HttpCompletionOption.ResponseHeadersRead);
-            response.EnsureSuccessStatusCode();
-            var data = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<ApiResponse>(data);
+            ApiResponse apiResponse = new ApiResponse();
+            var response = await _httpClient.GetAsync(requestUrl, HttpCompletionOption.ResponseHeadersRead);           
+            apiResponse.StatusCode = (int)response.StatusCode;  
+            if (apiResponse.StatusCode == 200)
+            {
+                var data = await response.Content.ReadAsStringAsync();
+                ApiResponse responseObject = JsonConvert.DeserializeObject<ApiResponse>(data);
+                T operation = JsonConvert.DeserializeObject<T>(Convert.ToString(responseObject.ResponseObject));
+                apiResponse.ResponseObject = operation;
+            }
+            else
+            {
+                apiResponse.ResponseObject = (T)Activator.CreateInstance(typeof(T));
+            }
+            return apiResponse;
         }
 
         /// <summary>

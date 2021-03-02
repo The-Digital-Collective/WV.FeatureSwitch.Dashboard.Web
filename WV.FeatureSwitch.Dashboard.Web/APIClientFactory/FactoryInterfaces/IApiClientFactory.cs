@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using WV.FeatureSwitch.Dashboard.Web.APIClient;
 
@@ -12,7 +11,7 @@ namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces
         /// </summary>
         /// <param name=""></param>
         /// <returns>List<T></returns>
-        Task<List<T>> LoadList(string baseUrl);
+        Task<ApiResponse> LoadList(string baseUrl);
 
         /// <summary>
         ///Create the new entry in Table of<T>
