@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -64,7 +63,9 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             //Creating Dummy Feature Switch View Model List
             _featureSwitchViewModels = new List<FeatureSwitchViewModel>()
             {
-                new FeatureSwitchViewModel() {Features = _features, CountrySite = "sandbox"}
+                new FeatureSwitchViewModel() {Features = _features, CountrySite = "sandbox", Status = 200},
+                new FeatureSwitchViewModel() {Features = _features, CountrySite = "staging", Status = 200},
+                new FeatureSwitchViewModel() {Features = _features, CountrySite = "uk", Status = 400}
             };
             
             // StringBuilder of Comma-Seperated Feature Names
@@ -118,8 +119,12 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         {
             #region Arrange
 
+            ApiResponse apiResponse = new ApiResponse()
+            {
+                ResponseObject = _featureModels,
+            };
             List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(_featureModels);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(apiResponse);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
@@ -152,8 +157,14 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
         public void GetAllFeatureLists_CallsLoadList_ReturnsAValidListOfFeatureSwitchViewModelObjects()
         {
             #region Arrange
+
+            ApiResponse apiResponse = new ApiResponse()
+            {
+                ResponseObject = _featureModels,
+                StatusCode = 200
+            };
             List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(_featureModels);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(apiResponse);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
@@ -162,6 +173,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
 
             var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
             var featureList = actionResult[0].Features;
+            var status = actionResult[0].Status;
 
             #endregion
 
@@ -169,9 +181,11 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
 
             Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
             Assert.IsNotNull(actionResult);
+            Assert.IsNotNull(status);
             Assert.IsTrue(actionResult.Count > 0);
             Assert.AreEqual(featureList.Count, _featureModels.Count);
             CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
+            Assert.AreEqual(200, status);
 
             #endregion
         }
@@ -182,8 +196,13 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             #region Arrange
 
             List<FeatureModel> testFeatureModels = new List<FeatureModel>();
+            ApiResponse apiResponse = new ApiResponse()
+            {
+                ResponseObject = testFeatureModels,
+                StatusCode = 400
+            };
             List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
-            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(testFeatureModels);
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(apiResponse);
             _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
 
             #endregion
@@ -193,6 +212,7 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
             var featureList = actionResult[0].Features;
             var countrySite = actionResult[0].CountrySite;
+            var status = actionResult[0].Status;
 
             #endregion
 
@@ -201,9 +221,11 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
             Assert.IsNotNull(actionResult);
             Assert.IsNotNull(countrySite);
+            Assert.IsNotNull(status);
             Assert.IsTrue(actionResult.Count >= 1);
             Assert.AreEqual(featureList.Count, testFeatureModels.Count);
             CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
+            Assert.AreNotEqual(200, status);
 
             #endregion
         }
@@ -231,6 +253,148 @@ namespace WV.FeatureSwitch.Dashboard.UnitTest.Controller
             Assert.IsNotNull(actionResult);
             Assert.AreEqual(actionResult.Count, 0);
 
+            #endregion
+        }
+
+        [Test]
+        public void GetAllFeatureLists_CallsLoadList_ReturnsAValidListOfFeatureSwitchViewModelObjectsAllEnvironmentsOnline()
+        {
+            #region Arrange
+
+            ApiResponse apiResponse = new ApiResponse()
+            {
+                ResponseObject = _featureModels,
+                StatusCode = 200
+            };
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(apiResponse);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
+            var featureList = actionResult[0].Features;
+            List<int> statusList = new List<int>();
+
+            foreach (var item in actionResult)
+            {
+                statusList.Add(item.Status);
+            }
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
+            Assert.IsNotNull(actionResult);
+            Assert.IsTrue(actionResult.Count > 0);
+            Assert.AreEqual(featureList.Count, _featureModels.Count);
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
+            CollectionAssert.AllItemsAreNotNull(statusList);
+            CollectionAssert.Contains(statusList, 200);
+
+            #endregion
+        }
+
+        [Test]
+        public void GetAllFeatureLists_CallsLoadList_ReturnsAValidListOfFeatureSwitchViewModelObjectsAllEnvironmentsOffline()
+        {
+            #region Arrange
+
+            ApiResponse apiResponse = new ApiResponse()
+            {
+                ResponseObject = _featureModels,
+                StatusCode = 400
+            };
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = new List<FeatureSwitchViewModel>();
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(apiResponse);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
+            var featureList = actionResult[0].Features;
+            List<int> statusList = new List<int>();
+
+            foreach (var item in actionResult)
+            {
+                statusList.Add(item.Status);
+            }
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
+            Assert.IsNotNull(actionResult);
+            Assert.IsTrue(actionResult.Count > 0);
+            Assert.AreEqual(featureList.Count, _featureModels.Count);
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
+            CollectionAssert.AllItemsAreNotNull(statusList);
+            CollectionAssert.DoesNotContain(statusList, 200);
+
+            #endregion
+        }
+
+        [Test]
+        public void GetAllFeatureLists_CallsLoadList_ReturnsAValidListOfFeatureSwitchViewModelObjectsAllEnvironmentsOnlineExceptUK()
+        {
+            #region Arrange
+
+            ApiResponse apiResponse = new ApiResponse()
+            {
+                ResponseObject = _featureModels
+            };
+            List<FeatureSwitchViewModel> emptyFeatureSwitchViewModelList = _featureSwitchViewModels;
+            var mockFeatureSwitchFactoryResult = new MockFeatureSwitchFactory().MockLoadList(apiResponse);
+            _featureSwitchController = new FeatureSwitchController(mockFeatureSwitchFactoryResult.Result.Object, _mockLogger.Object, _configuration, emptyFeatureSwitchViewModelList);
+
+            #endregion
+
+            #region Act
+
+            var actionResult = _featureSwitchController.GetAllFeatureLists().Result;
+            var featureList = actionResult[0].Features;
+            List<int> onlineStatusCountryList = new List<int>();
+            List<int> offlineStatusCountryList = new List<int>();
+            List<FeatureSwitchViewModel> onlineStatusfeatureSwitchViewModels = new List<FeatureSwitchViewModel>();
+            List<FeatureSwitchViewModel> offlineStatusfeatureSwitchViewModels = new List<FeatureSwitchViewModel>();
+
+            foreach (var item in actionResult)
+            {
+                if (item.Status == 200)
+                {
+                    onlineStatusCountryList.Add(item.Status);
+                    onlineStatusfeatureSwitchViewModels.Add(item);
+                }
+                else
+                {
+                    offlineStatusCountryList.Add(item.Status);
+                    offlineStatusfeatureSwitchViewModels.Add(item);
+                }
+            }
+
+            #endregion
+
+            #region Assert
+
+            Assert.IsInstanceOf(typeof(List<FeatureSwitchViewModel>), actionResult);
+            Assert.IsNotNull(actionResult);
+            Assert.IsTrue(actionResult.Count > 0);
+            Assert.AreEqual(featureList.Count, _featureModels.Count);
+            CollectionAssert.AllItemsAreInstancesOfType(featureList, typeof(FeatureModel));
+            CollectionAssert.AllItemsAreNotNull(onlineStatusCountryList);
+            CollectionAssert.AllItemsAreNotNull(offlineStatusCountryList);
+            Assert.IsTrue(onlineStatusfeatureSwitchViewModels.Count >= 1);
+            Assert.AreEqual(offlineStatusfeatureSwitchViewModels.Count, 1);
+            Assert.AreEqual(offlineStatusfeatureSwitchViewModels[0].CountrySite, "uk");
+            CollectionAssert.Contains(onlineStatusCountryList, 200);
+            Assert.AreNotEqual(offlineStatusCountryList[0], 200);
+            
             #endregion
         }
 

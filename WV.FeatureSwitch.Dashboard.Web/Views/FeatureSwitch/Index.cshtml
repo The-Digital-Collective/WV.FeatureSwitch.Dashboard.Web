@@ -7,9 +7,6 @@
     <span id="Notification" class="text-success pull-right">
         @ViewBag.Notification
     </span>}
-<script>
-    $("#Notification").fadeOut(6000);
-</script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <div class="table-responsive">
@@ -57,7 +54,16 @@
             {
                 <tr class="accordion-toggle collapsed" id="accordion1" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
                     <td class="expand-button">@item.CountrySite</td>
-                    <td></td>
+                    <td>
+                        @if (@item.Status == 200)
+                        {
+                            <p class="fa fa-check" style="color:green;"></p>
+                        }
+                        else
+                        {
+                            <p class="fa fa-times" style="color:red;"></p>
+                        }
+                    </td>
                     <td></td>
                     <td>
                         @using (Html.BeginForm("ResetAll", "FeatureSwitch"))

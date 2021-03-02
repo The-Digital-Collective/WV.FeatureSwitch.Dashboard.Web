@@ -1,10 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WV.FeatureSwitch.Dashboard.Web.APIClient;
 using WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.FactoryInterfaces;
-using WV.FeatureSwitch.Dashboard.Web.Helper;
 using WV.FeatureSwitch.Dashboard.Web.Models;
 
 
@@ -26,16 +24,24 @@ namespace WV.FeatureSwitch.Dashboard.Web.ApiClientFactory.Factory
             this.apiClient = _apiClient;
         }        
 
-        public async Task<List<FeatureModel>> LoadList(string baseUrl)
+        public async Task<ApiResponse> LoadList(string baseUrl)
         {   
             try
             {
-                List<FeatureModel> featureSwitchVMList = new List<FeatureModel>();
                 var requestUrl = apiClient.CreateRequestUri(baseUrl, FeatureSwitchServiceApiUrls.FeatureSwitchApiUrl.LoadList);
-                var response = await apiClient.GetAsync<ApiResponse>(requestUrl);
-                featureSwitchVMList = JsonConvert.DeserializeObject<List<FeatureModel>>(Convert.ToString(response.ResponseObject));
+                var response = await apiClient.GetAsync<List<FeatureModel>>(requestUrl);
 
-                return featureSwitchVMList;
+                if (response.StatusCode == 200)
+                {
+                    response.Message = "Success";
+                    response.Success = true;
+                }
+                else
+                {
+                    response.Message = "Failure";
+                    response.Success = false;
+                }
+                return response;
             }
             catch (Exception ex)
             {

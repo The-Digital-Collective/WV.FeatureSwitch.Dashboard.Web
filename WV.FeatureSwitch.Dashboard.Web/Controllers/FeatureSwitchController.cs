@@ -75,34 +75,40 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
         {
             try
             {
-                FeatureSwitchViewModel featureSwitchViewModel;
-                List<FeatureSwitchViewModel> featureViewModel = new List<FeatureSwitchViewModel>();
-
-                // Check if we have a valid (not empty) URL (being passed in throught appsettings.json)
-                if (!string.IsNullOrEmpty(_baseUrl))
+                if (_featureSwitchViewModelList.Count == 0)
                 {
-                    // Split the Comma-Seperated string of feature names and add them to a list
-                    List<string> CountrySites = _listOfCountries.Split(',').ToList();
+                    FeatureSwitchViewModel featureSwitchViewModel;
 
-                    // Loop through all Feature Switch View Models for all country sites
-                    foreach (string country in CountrySites)
+                    // Check if we have a valid (not empty) URL (being passed in throught appsettings.json)
+                    if (!string.IsNullOrEmpty(_baseUrl))
                     {
-                        // For each Feature Switch Model, create the appropriate url for it's country site
-                        string url = UrlBuilder.BaseUrlBuilder(_baseUrl, country);
-                        List<FeatureModel> featureSwitchViewModelList = await _featureSwitchFactory.LoadList(url);
+                        // Split the Comma-Seperated string of feature names and add them to a list
+                        List<string> CountrySites = _listOfCountries.Split(',').ToList();
 
-                        featureSwitchViewModel = new FeatureSwitchViewModel();
-
-                        // Add each Feature Switch View Model to a list of Feature Switch View Model
-                        if (featureSwitchViewModelList != null)
+                        // Loop through all Feature Switch View Models for all country sites
+                        foreach (string country in CountrySites)
                         {
-                            featureSwitchViewModel.Features = featureSwitchViewModelList;
-                            featureSwitchViewModel.CountrySite = country;
-                            featureViewModel.Add(featureSwitchViewModel);
+                            // For each Feature Switch Model, create the appropriate url for it's country site
+                            string url = UrlBuilder.BaseUrlBuilder(_baseUrl, country);
+                            response = await _featureSwitchFactory.LoadList(url);
+                            List<FeatureModel> featureSwitchViewModelList = response.ResponseObject as List<FeatureModel>;
+                            var status = response.StatusCode;
+
+                            featureSwitchViewModel = new FeatureSwitchViewModel();
+
+                            // Add each Feature Switch View Model to a list of Feature Switch View Model
+                            if (featureSwitchViewModelList != null)
+                            {
+                                featureSwitchViewModel.Features = featureSwitchViewModelList;
+                                // Retrieve the full name of the Country Site (not the acronym)
+                                featureSwitchViewModel.CountrySite = CountrySiteNameConstants.CountryName[country];
+                                featureSwitchViewModel.Status = status;
+                                _featureSwitchViewModelList.Add(featureSwitchViewModel);
+                            }
                         }
                     }
-                }
-                return featureViewModel;
+                }               
+                return _featureSwitchViewModelList;
             }
             catch(Exception ex)
             {
@@ -139,8 +145,10 @@ namespace WV.FeatureSwitch.Dashboard.Web.Controllers
                     // Loop through all the Feature Switch View Models
                     foreach (var featureSwitchViewModel in _featureSwitchViewModelList)
                     {
+                        // Retrieve the acronym for the Country Site. E.g. "Spain" will be "es"
+                        string countryName = CountrySiteNameConstants.CountryName.FirstOrDefault(x => x.Value == featureSwitchViewModel.CountrySite).Key;
                         // For each Feature Switch Model, create the appropriate url for it's country site
-                        string url = UrlBuilder.BaseUrlBuilder(_baseUrl, featureSwitchViewModel.CountrySite);
+                        string url = UrlBuilder.BaseUrlBuilder(_baseUrl, countryName);
                         List<FeatureModel> featureModels = featureSwitchViewModel.Features;
                        
                         // Check if there if any common feature names between the lists of the feature switch model, feature names and the selected feature names
